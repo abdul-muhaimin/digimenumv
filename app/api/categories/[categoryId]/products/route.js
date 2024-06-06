@@ -5,8 +5,6 @@ const prisma = new PrismaClient();
 
 export async function POST(req, { params }) {
   const { userId } = auth(req);
-  const { menuId } = params; // Extract the menuId from the request parameters
-  let data;
 
   if (!userId) {
     return new Response(JSON.stringify({ message: 'Authentication required' }), {
@@ -15,30 +13,25 @@ export async function POST(req, { params }) {
     });
   }
 
-  try {
-    data = await req.json();
-  } catch (error) {
-    return new Response(JSON.stringify({ message: 'Invalid request body' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const { name } = data;
+  const { categoryId } = params;
+  const { name, price, description } = await req.json();
 
   try {
-    const category = await prisma.category.create({
+    const newProduct = await prisma.product.create({
       data: {
         name,
-        menuId: parseInt(menuId),
+        price: parseFloat(price),
+        description,
+        categoryId: parseInt(categoryId),
       },
     });
 
-    return new Response(JSON.stringify(category), {
+    return new Response(JSON.stringify(newProduct), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('Error creating product:', error);
     return new Response(JSON.stringify({ message: 'Internal server error', details: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
