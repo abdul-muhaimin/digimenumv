@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { Button } from '@/components/ui/button';
 
 const Navbar = () => {
   return (
@@ -7,36 +8,50 @@ const Navbar = () => {
       <ul className="flex space-x-4">
         <li>
           <Link legacyBehavior href="/">
-            <a className="text-white">Home</a>
+            <Button asChild>
+              <a className="text-white">Home</a>
+            </Button>
           </Link>
         </li>
         <SignedIn>
           <li>
             <Link legacyBehavior href="/dashboard">
-              <a className="text-white">Dashboard</a>
+              <Button asChild>
+                <a className="text-white">Dashboard</a>
+              </Button>
             </Link>
           </li>
           <li>
             <Link legacyBehavior href="/my-qr">
-              <a className="text-white">My-QR</a>
+              <Button asChild>
+                <a className="text-white">My-QR</a>
+              </Button>
             </Link>
           </li>
           <li>
             <Link legacyBehavior href="/profile">
-              <a className="text-white">My-profile</a>
+              <Button asChild>
+                <a className="text-white">My-profile</a>
+              </Button>
             </Link>
           </li>
-          <UserButton />
+          <li>
+            <UserButton />
+          </li>
         </SignedIn>
         <SignedOut>
           <li>
             <Link legacyBehavior href="/sign-in">
-              <a className="text-white">Sign In</a>
+              <Button asChild>
+                <a className="text-white">Sign In</a>
+              </Button>
             </Link>
           </li>
           <li>
             <Link legacyBehavior href="/sign-up">
-              <a className="text-white">Sign Up</a>
+              <Button asChild>
+                <a className="text-white">Sign Up</a>
+              </Button>
             </Link>
           </li>
         </SignedOut>

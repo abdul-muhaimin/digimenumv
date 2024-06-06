@@ -3,6 +3,8 @@ import "../styles/globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,6 +19,7 @@ export default function RootLayout({ children }) {
       <html lang="en">
         <body className={`${inter.className} full-vh`}>
           <div className="flex flex-col min-h-screen">
+            <ToastContainer />
             <Navbar />
             <main className="flex-grow p-4">
               {children}
