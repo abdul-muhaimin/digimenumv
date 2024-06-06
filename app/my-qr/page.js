@@ -1,23 +1,23 @@
-// /app/my-qr/page.js
-"use client"
-import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation'; // Import useRouter
+"use client";
+import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { Reorder } from "framer-motion";
 
 const QRPage = () => {
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
   const { user } = useUser();
   const [menus, setMenus] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMenu, setCurrentMenu] = useState(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -32,23 +32,23 @@ const QRPage = () => {
         const data = await response.json();
         setMenus(data);
       } else {
-        toast.error('Failed to fetch menus');
+        toast.error("Failed to fetch menus");
       }
     } catch (error) {
-      toast.error('An error occurred while fetching menus');
+      toast.error("An error occurred while fetching menus");
     }
   };
 
   const openModal = (menu = null) => {
     setCurrentMenu(menu);
-    setName(menu ? menu.name : '');
+    setName(menu ? menu.name : "");
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setCurrentMenu(null);
-    setName('');
+    setName("");
   };
 
   const handleSave = async () => {
@@ -56,27 +56,41 @@ const QRPage = () => {
       let response;
       if (currentMenu) {
         response = await fetch(`/api/menus/${currentMenu.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
         });
       } else {
         response = await fetch(`/api/menus`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
         });
       }
 
       if (response.ok) {
-        toast.success(`Menu ${currentMenu ? 'updated' : 'created'} successfully`);
+        toast.success(`Menu ${currentMenu ? "updated" : "created"} successfully`);
         fetchMenus();
         closeModal();
       } else {
-        toast.error(`Failed to ${currentMenu ? 'update' : 'create'} menu`);
+        toast.error(`Failed to ${currentMenu ? "update" : "create"} menu`);
       }
     } catch (error) {
-      toast.error('An error occurred while saving menu');
+      toast.error("An error occurred while saving menu");
+    }
+  };
+
+  const handleReorder = async (newMenus) => {
+    setMenus(newMenus);
+    try {
+      await fetch("/api/menus/reorder", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ menus: newMenus }),
+      });
+      toast.success("Menu positions updated successfully", { position: "top-center" });
+    } catch (error) {
+      toast.error("Failed to update menu positions");
     }
   };
 
@@ -86,17 +100,21 @@ const QRPage = () => {
       <Button onClick={() => openModal()}>Create Menu</Button>
       <div className="mt-4">
         {menus.length > 0 ? (
-          menus.map((menu) => (
-            <Card key={menu.id} className="mb-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl">{menu.name}</h2>
-                <div>
-                  <Button onClick={() => openModal(menu)}>Edit</Button>
-                  <Button onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
-                </div>
-              </div>
-            </Card>
-          ))
+          <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
+            {menus.map((menu) => (
+              <Reorder.Item key={menu.id} value={menu}>
+                <Card className="mb-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl">{menu.name}</h2>
+                    <div>
+                      <Button onClick={() => openModal(menu)}>Edit</Button>
+                      <Button onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
+                    </div>
+                  </div>
+                </Card>
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
         ) : (
           <div>No menus available</div>
         )}
@@ -129,7 +147,7 @@ const QRPage = () => {
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                    {currentMenu ? 'Edit Menu' : 'Create Menu'}
+                    {currentMenu ? "Edit Menu" : "Create Menu"}
                   </Dialog.Title>
                   <div className="mt-2">
                     <Label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</Label>
@@ -141,7 +159,7 @@ const QRPage = () => {
                     />
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <Button onClick={handleSave}>{currentMenu ? 'Save' : 'Create'}</Button>
+                    <Button onClick={handleSave}>{currentMenu ? "Save" : "Create"}</Button>
                     <Button onClick={closeModal} className="ml-2">Cancel</Button>
                   </div>
                 </Dialog.Panel>

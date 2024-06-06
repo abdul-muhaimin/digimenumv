@@ -32,7 +32,9 @@ model Menu {
   userId    Int
   user      User       @relation(fields: [userId], references: [id])
   categories Category[]
+  position  Int
 }
+
 
 model Category {
   id        Int        @id @default(autoincrement())

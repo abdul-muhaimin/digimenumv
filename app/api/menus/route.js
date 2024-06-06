@@ -28,6 +28,7 @@ export async function GET(req) {
 
     const menus = await prisma.menu.findMany({
       where: { userId: user.id },
+      orderBy: { position: 'asc' },
     });
 
     return new Response(JSON.stringify(menus), {
@@ -77,10 +78,18 @@ export async function POST(req) {
       });
     }
 
+    const lastMenu = await prisma.menu.findFirst({
+      where: { userId: user.id },
+      orderBy: { position: 'desc' },
+    });
+
+    const newPosition = lastMenu ? lastMenu.position + 1 : 0;
+
     const menu = await prisma.menu.create({
       data: {
         name,
         userId: user.id,
+        position: newPosition,
       },
     });
 
