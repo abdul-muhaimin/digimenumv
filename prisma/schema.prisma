@@ -23,4 +23,30 @@ model User {
   businessIsland    String?
   businessAtoll     String?
   businessTelephone String?
+  menus             Menu[]
+}
+
+model Menu {
+  id        Int        @id @default(autoincrement())
+  name      String
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  categories Category[]
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  menuId    Int
+  menu      Menu       @relation(fields: [menuId], references: [id])
+  products  Product[]
+  position  Int        @default(0)
+}
+
+model Product {
+  id         Int        @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category   @relation(fields: [categoryId], references: [id])
+  position   Int        @default(0)
 }
