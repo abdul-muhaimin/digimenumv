@@ -39,8 +39,15 @@ const UserDetails = () => {
         setUserData(data);
 
         // Set form values
+        setValue('name', data.name);
         setValue('email', data.email);
         setValue('mobile', data.mobile);
+        setValue('businessName', data.businessName);
+        setValue('businessType', data.businessType);
+        setValue('businessAddress', data.businessAddress);
+        setValue('businessIsland', data.businessIsland);
+        setValue('businessAtoll', data.businessAtoll);
+        setValue('businessTelephone', data.businessTelephone);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         toast.error('Failed to fetch user data');
@@ -87,6 +94,14 @@ const UserDetails = () => {
       <h1 className="text-2xl font-bold mb-4">User Details</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-4">
+          <Label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</Label>
+          <Input
+            id="name"
+            {...register('name')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</Label>
           <Input
             id="email"
@@ -99,6 +114,54 @@ const UserDetails = () => {
           <Input
             id="mobile"
             {...register('mobile')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessName" className="block text-sm font-medium text-gray-700">Business Name</Label>
+          <Input
+            id="businessName"
+            {...register('businessName')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessType" className="block text-sm font-medium text-gray-700">Business Type</Label>
+          <Input
+            id="businessType"
+            {...register('businessType')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessAddress" className="block text-sm font-medium text-gray-700">Business Address</Label>
+          <Input
+            id="businessAddress"
+            {...register('businessAddress')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessIsland" className="block text-sm font-medium text-gray-700">Business Island</Label>
+          <Input
+            id="businessIsland"
+            {...register('businessIsland')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessAtoll" className="block text-sm font-medium text-gray-700">Business Atoll</Label>
+          <Input
+            id="businessAtoll"
+            {...register('businessAtoll')}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="businessTelephone" className="block text-sm font-medium text-gray-700">Business Telephone</Label>
+          <Input
+            id="businessTelephone"
+            {...register('businessTelephone')}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
           />
         </div>

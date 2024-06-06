@@ -9,9 +9,18 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  clerkId    String   @unique
-  email      String?  // Make email optional
-  mobile     String?  // Make mobile number optional
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  clerkId   String   @unique
+  email     String?
+  mobile    String?
+  name      String?
+  createdAt DateTime @default(now())
+
+  // Business fields
+  businessName      String?
+  businessType      String?
+  businessAddress   String?
+  businessIsland    String?
+  businessAtoll     String?
+  businessTelephone String?
 }
