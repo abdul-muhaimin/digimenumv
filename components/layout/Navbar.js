@@ -1,61 +1,40 @@
+"use client"
 import Link from 'next/link';
 import { UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
-import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   return (
     <nav className="bg-gray-800 p-4">
-      <ul className="flex space-x-4">
-        <li>
-          <Link legacyBehavior href="/">
-            <Button asChild>
-              <a className="text-white">Home</a>
-            </Button>
+      <div className="container mx-auto flex flex-wrap justify-between items-center">
+        <div className="text-white text-xl font-bold">
+          <Link href="/" legacyBehavior>
+            <a className="text-white">My App</a>
           </Link>
-        </li>
-        <SignedIn>
-          <li>
+        </div>
+        <div className="flex flex-wrap items-center space-x-2 lg:space-x-4 mt-2 lg:mt-0">
+          <SignedIn>
             <Link legacyBehavior href="/dashboard">
-              <Button asChild>
-                <a className="text-white">Dashboard</a>
-              </Button>
+              <a className={cn("text-white", "text-sm lg:text-base")}>Dashboard</a>
             </Link>
-          </li>
-          <li>
             <Link legacyBehavior href="/my-qr">
-              <Button asChild>
-                <a className="text-white">My-QR</a>
-              </Button>
+              <a className={cn("text-white", "text-sm lg:text-base")}>My-QR</a>
             </Link>
-          </li>
-          <li>
             <Link legacyBehavior href="/profile">
-              <Button asChild>
-                <a className="text-white">My-profile</a>
-              </Button>
+              <a className={cn("text-white", "text-sm lg:text-base")}>My-profile</a>
             </Link>
-          </li>
-          <li>
-            <UserButton />
-          </li>
-        </SignedIn>
-        <SignedOut>
-          <li>
+            <UserButton className="ml-2 lg:ml-4" />
+          </SignedIn>
+          <SignedOut>
             <Link legacyBehavior href="/sign-in">
-              <Button asChild>
-                <a className="text-white">Sign In</a>
-              </Button>
+              <a className={cn("text-white", "text-sm lg:text-base")}>Sign In</a>
             </Link>
-          </li>
-          <li>
             <Link legacyBehavior href="/sign-up">
-              <Button asChild>
-                <a className="text-white">Sign Up</a>
-              </Button>
+              <a className={cn("text-white", "text-sm lg:text-base")}>Sign Up</a>
             </Link>
-          </li>
-        </SignedOut>
-      </ul>
+          </SignedOut>
+        </div>
+      </div>
     </nav>
   );
 };

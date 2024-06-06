@@ -1,16 +1,148 @@
 "use client"
-import UserDetails from '@/components/UserDetails';
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+const UserDetails = () => {
+  const { isLoaded, user } = useUser();
+  const [userData, setUserData] = useState(null);
+  const { register, handleSubmit, setValue } = useForm();
 
+  useEffect(() => {
+    if (!isLoaded) {
+      console.log('Clerk not fully loaded yet');
+      return;
+    }
 
-export default function Contact() {
+    if (!user) {
+      console.log('User is not available');
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        console.log('Fetching user data for user ID:', user.id);
+        const response = await fetch(`/api/users/${user.id}`);
+
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error text:', errorText);
+          throw new Error(`Error fetching user data: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched user data:', data);
+        setUserData(data);
+
+        // Set form values
+        setValue('name', data.name);
+        setValue('email', data.email);
+        setValue('mobile', data.mobile);
+        setValue('businessName', data.businessName);
+        setValue('businessType', data.businessType);
+        setValue('businessAddress', data.businessAddress);
+        setValue('businessIsland', data.businessIsland);
+        setValue('businessAtoll', data.businessAtoll);
+        setValue('businessTelephone', data.businessTelephone);
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        toast.error('Failed to fetch user data');
+      }
+    };
+
+    fetchUserData();
+  }, [isLoaded, user, setValue]);
+
+  const onSubmit = async (data) => {
+    try {
+      console.log('Submitting form data:', data);
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error text:', errorText);
+        throw new Error(`Error updating user data: ${errorText}`);
+      }
+
+      const updatedData = await response.json();
+      console.log('Updated user data:', updatedData);
+      setUserData(updatedData);
+      toast.success('Details updated successfully');
+    } catch (error) {
+      console.error('Failed to update user data:', error);
+      toast.error('An error occurred');
+    }
+  };
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div>
-
-      <main className="p-4">
-        <UserDetails />
-
-      </main>
+    <div className="container mx-auto p-4">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>User Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="mb-4">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" {...register('name')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" {...register('email')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="mobile">Mobile</Label>
+              <Input id="mobile" {...register('mobile')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessName">Business Name</Label>
+              <Input id="businessName" {...register('businessName')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessType">Business Type</Label>
+              <Input id="businessType" {...register('businessType')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessAddress">Business Address</Label>
+              <Input id="businessAddress" {...register('businessAddress')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessIsland">Business Island</Label>
+              <Input id="businessIsland" {...register('businessIsland')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessAtoll">Business Atoll</Label>
+              <Input id="businessAtoll" {...register('businessAtoll')} />
+            </div>
+            <div className="mb-4">
+              <Label htmlFor="businessTelephone">Business Telephone</Label>
+              <Input id="businessTelephone" {...register('businessTelephone')} />
+            </div>
+            <Button type="submit" className="w-full">
+              Save
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default UserDetails;

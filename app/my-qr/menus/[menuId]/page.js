@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
@@ -21,6 +22,7 @@ const MenuShowPage = ({ params }) => {
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '' });
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
   const [currentProductId, setCurrentProductId] = useState(null);
+  const [currentCategoryName, setCurrentCategoryName] = useState('');
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -57,6 +59,45 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error adding category:', error);
+    }
+  };
+
+  const handleEditCategory = async () => {
+    try {
+      const response = await fetch(`/api/categories/${currentCategoryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newCategoryName }),
+      });
+
+      if (response.ok) {
+        const updatedCategory = await response.json();
+        setCategories(categories.map(category => (category.id === currentCategoryId ? updatedCategory : category)));
+        setNewCategoryName('');
+        setIsCategoryModalOpen(false);
+      } else {
+        console.error('Failed to edit category:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error editing category:', error);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setCategories(categories.filter(category => category.id !== categoryId));
+      } else {
+        console.error('Failed to delete category:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
     }
   };
 
@@ -149,7 +190,7 @@ const MenuShowPage = ({ params }) => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create New Category</DialogTitle>
+                <DialogTitle>{editMode ? 'Edit Category' : 'Create New Category'}</DialogTitle>
               </DialogHeader>
               <div>
                 <Label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">
@@ -161,8 +202,8 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
-                <Button onClick={handleAddCategory} className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md">
-                  Add Category
+                <Button onClick={editMode ? handleEditCategory : handleAddCategory} className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md">
+                  {editMode ? 'Update Category' : 'Add Category'}
                 </Button>
               </div>
             </DialogContent>
@@ -172,6 +213,24 @@ const MenuShowPage = ({ params }) => {
               <AccordionItem key={category.id} value={category.id}>
                 <AccordionTrigger>{category.name}</AccordionTrigger>
                 <AccordionContent>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="float-right">•••</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => {
+                        setCurrentCategoryId(category.id);
+                        setNewCategoryName(category.name);
+                        setEditMode(true);
+                        setIsCategoryModalOpen(true);
+                      }}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteCategory(category.id)}>
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     className="mt-2 mb-4"
                     onClick={() => {
