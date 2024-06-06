@@ -22,7 +22,6 @@ const MenuShowPage = ({ params }) => {
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
   const [currentProductId, setCurrentProductId] = useState(null);
 
-
   useEffect(() => {
     const fetchMenu = async () => {
       try {
@@ -50,10 +49,9 @@ const MenuShowPage = ({ params }) => {
 
       if (response.ok) {
         const newCategory = await response.json();
-        setCategories([...categories, newCategory]);
+        setCategories([...categories, { ...newCategory, products: [] }]);
         setNewCategoryName('');
         setIsCategoryModalOpen(false);
-
       } else {
         console.error('Failed to add category:', await response.text());
       }
@@ -87,7 +85,7 @@ const MenuShowPage = ({ params }) => {
             }
             return {
               ...category,
-              products: [...category.products, updatedProduct],
+              products: [...(category.products || []), updatedProduct],
             };
           }
           return category;
