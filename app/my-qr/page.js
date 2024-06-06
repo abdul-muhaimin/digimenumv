@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Reorder } from "framer-motion";
+import { Reorder, useDragControls } from 'framer-motion';
+import { MdDragIndicator } from 'react-icons/md';
+
 
 const QRPage = () => {
   const router = useRouter();
@@ -18,6 +20,7 @@ const QRPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMenu, setCurrentMenu] = useState(null);
   const [name, setName] = useState("");
+  const dragControls = useDragControls();
 
   useEffect(() => {
     if (user) {
@@ -105,7 +108,20 @@ const QRPage = () => {
               <Reorder.Item key={menu.id} value={menu}>
                 <Card className="mb-4">
                   <div className="flex justify-between items-center">
-                    <h2 className="text-xl">{menu.name}</h2>
+                    <div className="flex items-center">
+                      <div
+                        className="cursor-pointer mr-4"
+                        onPointerDown={(e) => e.stopPropagation()} // Prevent dragging from other parts
+                      >
+                        <MdDragIndicator className="text-xl" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl">{menu.name}</h2>
+                        <p className="text-sm text-gray-500">
+                          {menu.categoriesCount} categories, {menu.productsCount} products
+                        </p>
+                      </div>
+                    </div>
                     <div>
                       <Button onClick={() => openModal(menu)}>Edit</Button>
                       <Button onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
@@ -171,5 +187,6 @@ const QRPage = () => {
     </div>
   );
 };
+
 
 export default QRPage;

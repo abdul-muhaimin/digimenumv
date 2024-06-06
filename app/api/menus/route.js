@@ -29,9 +29,24 @@ export async function GET(req) {
     const menus = await prisma.menu.findMany({
       where: { userId: user.id },
       orderBy: { position: 'asc' },
+      include: {
+        categories: {
+          select: {
+            _count: {
+              select: { products: true },
+            },
+          },
+        },
+      },
     });
 
-    return new Response(JSON.stringify(menus), {
+    const menuData = menus.map(menu => ({
+      ...menu,
+      categoriesCount: menu.categories.length,
+      productsCount: menu.categories.reduce((acc, category) => acc + category._count.products, 0),
+    }));
+
+    return new Response(JSON.stringify(menuData), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

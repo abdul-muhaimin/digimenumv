@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DotsVerticalIcon } from '@heroicons/react/outline';
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
@@ -215,7 +216,9 @@ const MenuShowPage = ({ params }) => {
                 <AccordionContent>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button className="float-right">•••</Button>
+                      <Button variant="ghost" className="float-right">
+                        <DotsVerticalIcon className="h-5 w-5" />
+                      </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => {
@@ -232,7 +235,7 @@ const MenuShowPage = ({ params }) => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button
-                    className="mt-2 mb-4"
+                    className="mt-2 mb-4 text-xs py-1 px-2"
                     onClick={() => {
                       setCurrentCategoryId(category.id);
                       setIsProductModalOpen(true);
@@ -240,6 +243,7 @@ const MenuShowPage = ({ params }) => {
                   >
                     + Add Product
                   </Button>
+
                   {category.products && category.products.map((product) => (
                     <div key={product.id} className="flex justify-between items-center mb-2 p-2 border rounded">
                       <div>
@@ -248,8 +252,21 @@ const MenuShowPage = ({ params }) => {
                         <p className="text-sm">{product.description}</p>
                       </div>
                       <div className="flex space-x-2">
-                        <Button onClick={() => handleEditProduct(category.id, product.id, product)}>Edit</Button>
-                        <Button onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="p-2">
+                              <DotsVerticalIcon className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleEditProduct(category.id, product.id, product)}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)}>
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   ))}
