@@ -12,6 +12,7 @@ import { DotsVerticalIcon } from '@heroicons/react/outline';
 import { Reorder, motion } from "framer-motion";
 import { MdDragIndicator } from "react-icons/md";
 import { toast } from 'react-toastify';
+import ImageCropper from '@/components/ImageCropper'; // Assume this is the image cropper component
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
@@ -30,6 +31,9 @@ const MenuShowPage = ({ params }) => {
   const [currentCategoryName, setCurrentCategoryName] = useState('');
   const [orderChanged, setOrderChanged] = useState(false);
   const [isDragEnabled, setIsDragEnabled] = useState(false);
+  const [image, setImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -123,7 +127,27 @@ const MenuShowPage = ({ params }) => {
       });
 
       if (response.ok) {
-        const updatedProduct = await response.json();
+        let updatedProduct = await response.json();
+        let productId = updatedProduct.id;
+
+        if (croppedImage) {
+          const imageUrl = await uploadImage(croppedImage, productId);
+          updatedProduct.imageUrl = imageUrl;
+
+          const updateResponse = await fetch(`/api/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageUrl }),
+          });
+
+          if (updateResponse.ok) {
+            const finalProduct = await updateResponse.json();
+            updatedProduct = finalProduct;
+          }
+        }
+
         const updatedCategories = categories.map(category => {
           if (category.id === currentCategoryId) {
             if (currentProductId) {
@@ -142,6 +166,8 @@ const MenuShowPage = ({ params }) => {
 
         setCategories(updatedCategories);
         setNewProduct({ name: '', price: '', description: '' });
+        setImage(null);
+        setCroppedImage(null);
         setIsProductModalOpen(false);
         setEditMode(false);
         setCurrentProductId(null);
@@ -257,6 +283,57 @@ const MenuShowPage = ({ params }) => {
     setOrderChanged(false);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSelectedImage(event.target.result);
+        setImage(file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageCrop = (croppedImg) => {
+    setCroppedImage(croppedImg);
+  };
+
+  const uploadImage = async (image, productId) => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('productId', productId);
+
+    try {
+      const response = await fetch('/api/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.imageUrl;
+      } else {
+        console.error('Failed to upload image:', await response.text());
+        return null;
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
+
+  const handleCropComplete = (croppedImage) => {
+    setCroppedImage(croppedImage);
+    setSelectedImage(null); // Hide the cropper and show the thumbnail
+  };
+
+  const removeCroppedImage = () => {
+    setCroppedImage(null);
+    setImage(null);
+  };
+
   const toggleDrag = () => {
     setIsDragEnabled(!isDragEnabled);
   };
@@ -338,16 +415,18 @@ const MenuShowPage = ({ params }) => {
                       <Reorder.Group axis="y" values={category.products || []} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
                         {category.products && category.products.map((product) => (
                           <Reorder.Item key={product.id} value={product} drag={isDragEnabled ? "y" : false}>
-                            <div className="flex justify-between items-center mb-2 p-2 border rounded">
-                              <div className="flex items-center">
-                                <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
-                                  <MdDragIndicator />
-                                </motion.div>
-                                <div>
-                                  <p className="text-lg font-semibold">{product.name}</p>
-                                  <p className="text-sm">{product.price}</p>
-                                  <p className="text-sm">{product.description}</p>
-                                </div>
+                            <div className="flex items-center mb-2 p-4 border rounded-md bg-white shadow-sm">
+                              {product.imageUrl && (
+                                <img
+                                  src={product.imageUrl}
+                                  alt={product.name}
+                                  className="w-24 h-24 object-cover rounded-md mr-4"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-lg font-semibold">{product.name}</p>
+                                <p className="text-sm text-gray-500">{product.price}</p>
+                                <p className="text-sm text-gray-700">{product.description}</p>
                               </div>
                               <div className="flex space-x-2">
                                 <DropdownMenu>
@@ -376,6 +455,7 @@ const MenuShowPage = ({ params }) => {
               </Reorder.Item>
             ))}
           </Reorder.Group>
+
           {orderChanged && (
             <div className="flex space-x-2 mt-4">
               <Button onClick={handleSaveCategoriesOrder}>Save Changes</Button>
@@ -415,6 +495,28 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
+                <Label htmlFor="productImage" className="block text-sm font-medium text-gray-700 mt-4">
+                  Product Image
+                </Label>
+                <Input
+                  id="productImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                />
+                {selectedImage && (
+                  <ImageCropper
+                    imageSrc={selectedImage}
+                    onCropComplete={handleCropComplete}
+                  />
+                )}
+                {croppedImage && (
+                  <div className="mt-4">
+                    <img src={URL.createObjectURL(croppedImage)} alt="Cropped" className="w-16 h-16 object-cover mt-2 rounded-md" />
+                    <Button onClick={removeCroppedImage} className="mt-2 text-xs">Remove Image</Button>
+                  </div>
+                )}
                 <Button
                   onClick={handleAddOrEditProduct}
                   className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md"

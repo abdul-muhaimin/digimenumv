@@ -52,4 +52,5 @@ model Product {
   categoryId Int
   category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   position   Int
+  imageUrl    String? 
 }
