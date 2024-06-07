@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@heroicons/react/outline';
+import { Reorder } from "framer-motion";
+import { MdDragIndicator } from "react-icons/md";
+import { toast } from 'react-toastify';
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
@@ -179,6 +182,51 @@ const MenuShowPage = ({ params }) => {
     router.back();
   };
 
+  const handleReorderCategories = async (newOrder) => {
+    setCategories(newOrder);
+
+    try {
+      const response = await fetch(`/api/menus/${menuId}/categories/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categories: newOrder }),
+      });
+
+      if (response.ok) {
+        toast.success("Category positions updated successfully");
+      } else {
+        toast.error("Failed to update category positions");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating category positions");
+    }
+  };
+
+  const handleReorderProducts = async (categoryId, newOrder) => {
+    setCategories(categories.map(category => {
+      if (category.id === categoryId) {
+        return { ...category, products: newOrder };
+      }
+      return category;
+    }));
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}/products/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ products: newOrder }),
+      });
+
+      if (response.ok) {
+        toast.success("Product positions updated successfully");
+      } else {
+        toast.error("Failed to update product positions");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating product positions");
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Button onClick={handleBack} className="mb-4">Back</Button>
@@ -209,71 +257,87 @@ const MenuShowPage = ({ params }) => {
               </div>
             </DialogContent>
           </Dialog>
-          <Accordion type="single" collapsible>
+          <Reorder.Group axis="y" values={categories} onReorder={handleReorderCategories}>
             {categories.map((category) => (
-              <AccordionItem key={category.id} value={category.id}>
-                <AccordionTrigger>{category.name}</AccordionTrigger>
-                <AccordionContent>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="float-right">
-                        <DotsVerticalIcon className="h-5 w-5" />
+              <Reorder.Item key={category.id} value={category}>
+                <Accordion type="single" collapsible>
+                  <AccordionItem key={category.id} value={category.id}>
+                    <AccordionTrigger>
+                      <div className="flex items-center">
+                        <MdDragIndicator className="cursor-pointer mr-4" />
+                        {category.name}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="float-right">
+                            <DotsVerticalIcon className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => {
+                            setCurrentCategoryId(category.id);
+                            setNewCategoryName(category.name);
+                            setEditMode(true);
+                            setIsCategoryModalOpen(true);
+                          }}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteCategory(category.id)}>
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <Button
+                        className="mt-2 mb-4 text-xs py-1 px-2"
+                        onClick={() => {
+                          setCurrentCategoryId(category.id);
+                          setIsProductModalOpen(true);
+                        }}
+                      >
+                        + Add Product
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => {
-                        setCurrentCategoryId(category.id);
-                        setNewCategoryName(category.name);
-                        setEditMode(true);
-                        setIsCategoryModalOpen(true);
-                      }}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDeleteCategory(category.id)}>
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    className="mt-2 mb-4 text-xs py-1 px-2"
-                    onClick={() => {
-                      setCurrentCategoryId(category.id);
-                      setIsProductModalOpen(true);
-                    }}
-                  >
-                    + Add Product
-                  </Button>
 
-                  {category.products && category.products.map((product) => (
-                    <div key={product.id} className="flex justify-between items-center mb-2 p-2 border rounded">
-                      <div>
-                        <p className="text-lg font-semibold">{product.name}</p>
-                        <p className="text-sm">{product.price}</p>
-                        <p className="text-sm">{product.description}</p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="p-2">
-                              <DotsVerticalIcon className="h-5 w-5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => handleEditProduct(category.id, product.id, product)}>
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)}>
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
+                      <Reorder.Group axis="y" values={category.products} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
+                        {category.products && category.products.map((product) => (
+                          <Reorder.Item key={product.id} value={product}>
+                            <div className="flex justify-between items-center mb-2 p-2 border rounded">
+                              <div className="flex items-center">
+                                <MdDragIndicator className="cursor-pointer mr-4" />
+                                <div>
+                                  <p className="text-lg font-semibold">{product.name}</p>
+                                  <p className="text-sm">{product.price}</p>
+                                  <p className="text-sm">{product.description}</p>
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="p-2">
+                                      <DotsVerticalIcon className="h-5 w-5" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => handleEditProduct(category.id, product.id, product)}>
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)}>
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </Reorder.Item>
             ))}
-          </Accordion>
+          </Reorder.Group>
           <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
             <DialogContent>
               <DialogHeader>

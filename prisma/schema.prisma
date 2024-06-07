@@ -42,7 +42,7 @@ model Category {
   menuId    Int
   menu      Menu       @relation(fields: [menuId], references: [id])
   products  Product[]
-  position  Int        @default(0)
+  position  Int
 }
 
 model Product {
@@ -52,5 +52,5 @@ model Product {
   description String?
   categoryId Int
   category   Category   @relation(fields: [categoryId], references: [id])
-  position   Int        @default(0)
+  position   Int
 }

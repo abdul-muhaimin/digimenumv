@@ -3,8 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
-// Handle POST request to create a new category
-export async function POST(req, { params }) {
+export async function PUT(req, { params }) {
   const { userId: clerkUserId } = auth(req);
 
   if (!clerkUserId) {
@@ -24,8 +23,8 @@ export async function POST(req, { params }) {
     });
   }
 
-  const { menuId } = params;
-  const { name } = data;
+  const { categoryId } = params;
+  const { products } = data;
 
   try {
     const user = await prisma.user.findUnique({
@@ -39,23 +38,15 @@ export async function POST(req, { params }) {
       });
     }
 
-    const lastCategory = await prisma.category.findFirst({
-      where: { menuId: parseInt(menuId) },
-      orderBy: { position: 'desc' },
-    });
+    for (let i = 0; i < products.length; i++) {
+      await prisma.product.update({
+        where: { id: products[i].id },
+        data: { position: i },
+      });
+    }
 
-    const newPosition = lastCategory ? lastCategory.position + 1 : 0;
-
-    const category = await prisma.category.create({
-      data: {
-        name,
-        menuId: parseInt(menuId),
-        position: newPosition,
-      },
-    });
-
-    return new Response(JSON.stringify(category), {
-      status: 201,
+    return new Response(JSON.stringify({ message: 'Products reordered successfully' }), {
+      status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {

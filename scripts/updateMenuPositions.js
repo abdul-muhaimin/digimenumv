@@ -1,32 +1,30 @@
 const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
 
-async function main() {
-  const users = await prisma.user.findMany({
+async function updateProductPositions() {
+  const categories = await prisma.category.findMany({
     include: {
-      menus: true,
+      products: true,
     },
   });
 
-  for (const user of users) {
-    let position = 0;
-    for (const menu of user.menus) {
-      await prisma.menu.update({
-        where: { id: menu.id },
-        data: { position: position },
+  for (const category of categories) {
+    const { products } = category;
+    for (let i = 0; i < products.length; i++) {
+      await prisma.product.update({
+        where: { id: products[i].id },
+        data: { position: i },
       });
-      position++;
     }
   }
+
+  console.log('Product positions updated successfully.');
+  prisma.$disconnect();
 }
 
-main()
-  .then(() => {
-    console.log('Positions reset successfully.');
-  })
-  .catch((e) => {
-    console.error(e);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+updateProductPositions().catch((error) => {
+  console.error('Error updating product positions:', error);
+  prisma.$disconnect();
+});
+updateProductPositions();

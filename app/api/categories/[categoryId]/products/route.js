@@ -4,29 +4,44 @@ import { auth } from '@clerk/nextjs/server';
 const prisma = new PrismaClient();
 
 export async function POST(req, { params }) {
-  const { userId } = auth(req);
+  const { categoryId } = params;
+  let data;
 
-  if (!userId) {
-    return new Response(JSON.stringify({ message: 'Authentication required' }), {
-      status: 401,
+  try {
+    data = await req.json();
+  } catch (error) {
+    console.error('Invalid request body:', error);
+    return new Response(JSON.stringify({ message: 'Invalid request body' }), {
+      status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  const { categoryId } = params;
-  const { name, price, description } = await req.json();
+  const { name, price, description } = data;
 
   try {
-    const newProduct = await prisma.product.create({
+    console.log('Finding last product in category:', categoryId);
+    const lastProduct = await prisma.product.findFirst({
+      where: { categoryId: parseInt(categoryId) },
+      orderBy: { position: 'desc' },
+    });
+
+    const newPosition = lastProduct ? lastProduct.position + 1 : 0;
+    console.log('New product position:', newPosition);
+
+    console.log('Creating product with data:', { name, price, description, categoryId: parseInt(categoryId), position: newPosition });
+    const product = await prisma.product.create({
       data: {
         name,
         price: parseFloat(price),
         description,
         categoryId: parseInt(categoryId),
+        position: newPosition,
       },
     });
 
-    return new Response(JSON.stringify(newProduct), {
+    console.log('Product created successfully:', product);
+    return new Response(JSON.stringify(product), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
