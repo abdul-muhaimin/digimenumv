@@ -1,26 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Reorder, useDragControls } from 'framer-motion';
+import { Reorder } from 'framer-motion';
 import { MdDragIndicator } from 'react-icons/md';
-
 
 const QRPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const [menus, setMenus] = useState([]);
+  const [originalMenus, setOriginalMenus] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMenu, setCurrentMenu] = useState(null);
   const [name, setName] = useState("");
-  const dragControls = useDragControls();
+  const [orderChanged, setOrderChanged] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -34,6 +33,7 @@ const QRPage = () => {
       if (response.ok) {
         const data = await response.json();
         setMenus(data);
+        setOriginalMenus(data);
       } else {
         toast.error("Failed to fetch menus");
       }
@@ -83,18 +83,34 @@ const QRPage = () => {
     }
   };
 
-  const handleReorder = async (newMenus) => {
-    setMenus(newMenus);
+  const handleReorder = (newOrder) => {
+    setMenus(newOrder);
+    setOrderChanged(true);
+  };
+
+  const handleSaveOrder = async () => {
     try {
-      await fetch("/api/menus/reorder", {
+      const response = await fetch(`/api/menus/reorder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menus: newMenus }),
+        body: JSON.stringify({ menus }),
       });
-      toast.success("Menu positions updated successfully", { position: "top-center" });
+
+      if (response.ok) {
+        toast.success("Menu positions updated successfully");
+        setOrderChanged(false);
+        setOriginalMenus(menus);
+      } else {
+        toast.error("Failed to update menu positions");
+      }
     } catch (error) {
-      toast.error("Failed to update menu positions");
+      toast.error("An error occurred while updating menu positions");
     }
+  };
+
+  const handleCancelOrder = () => {
+    setMenus(originalMenus);
+    setOrderChanged(false);
   };
 
   return (
@@ -111,7 +127,8 @@ const QRPage = () => {
                     <div className="flex items-center">
                       <div
                         className="cursor-pointer mr-4"
-                        onPointerDown={(e) => e.stopPropagation()} // Prevent dragging from other parts
+                        onPointerDown={(e) => e.target.parentNode.parentNode.draggable = true}
+                        onPointerUp={(e) => e.target.parentNode.parentNode.draggable = false}
                       >
                         <MdDragIndicator className="text-xl" />
                       </div>
@@ -135,6 +152,12 @@ const QRPage = () => {
           <div>No menus available</div>
         )}
       </div>
+      {orderChanged && (
+        <div className="flex space-x-2 mt-4">
+          <Button onClick={handleSaveOrder}>Save Changes</Button>
+          <Button onClick={handleCancelOrder}>Cancel</Button>
+        </div>
+      )}
 
       <Transition appear show={isModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -187,6 +210,5 @@ const QRPage = () => {
     </div>
   );
 };
-
 
 export default QRPage;

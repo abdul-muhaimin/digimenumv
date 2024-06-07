@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, Fragment } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,7 @@ const MenuShowPage = ({ params }) => {
   const { menuId } = params;
   const [menu, setMenu] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [originalCategories, setOriginalCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const router = useRouter();
@@ -27,6 +28,7 @@ const MenuShowPage = ({ params }) => {
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
   const [currentProductId, setCurrentProductId] = useState(null);
   const [currentCategoryName, setCurrentCategoryName] = useState('');
+  const [orderChanged, setOrderChanged] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -35,6 +37,7 @@ const MenuShowPage = ({ params }) => {
         const data = await response.json();
         setMenu(data);
         setCategories(data.categories || []);
+        setOriginalCategories(data.categories || []);
       } catch (error) {
         console.error('Failed to fetch menu:', error);
       }
@@ -182,18 +185,23 @@ const MenuShowPage = ({ params }) => {
     router.back();
   };
 
-  const handleReorderCategories = async (newOrder) => {
+  const handleReorderCategories = (newOrder) => {
     setCategories(newOrder);
+    setOrderChanged(true);
+  };
 
+  const handleSaveCategoriesOrder = async () => {
     try {
       const response = await fetch(`/api/menus/${menuId}/categories/reorder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categories: newOrder }),
+        body: JSON.stringify({ categories }),
       });
 
       if (response.ok) {
         toast.success("Category positions updated successfully");
+        setOrderChanged(false);
+        setOriginalCategories(categories);
       } else {
         toast.error("Failed to update category positions");
       }
@@ -202,29 +210,50 @@ const MenuShowPage = ({ params }) => {
     }
   };
 
-  const handleReorderProducts = async (categoryId, newOrder) => {
+  const handleCancelCategoriesOrder = () => {
+    setCategories(originalCategories);
+    setOrderChanged(false);
+  };
+
+  const handleReorderProducts = (categoryId, newOrder) => {
     setCategories(categories.map(category => {
       if (category.id === categoryId) {
         return { ...category, products: newOrder };
       }
       return category;
     }));
+    setOrderChanged(true);
+  };
 
+  const handleSaveProductsOrder = async (categoryId) => {
     try {
+      const category = categories.find(cat => cat.id === categoryId);
       const response = await fetch(`/api/categories/${categoryId}/products/reorder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ products: newOrder }),
+        body: JSON.stringify({ products: category.products }),
       });
 
       if (response.ok) {
         toast.success("Product positions updated successfully");
+        setOrderChanged(false);
       } else {
         toast.error("Failed to update product positions");
       }
     } catch (error) {
       toast.error("An error occurred while updating product positions");
     }
+  };
+
+  const handleCancelProductsOrder = (categoryId) => {
+    const originalCategory = originalCategories.find(cat => cat.id === categoryId);
+    setCategories(categories.map(category => {
+      if (category.id === categoryId) {
+        return { ...category, products: originalCategory.products };
+      }
+      return category;
+    }));
+    setOrderChanged(false);
   };
 
   return (
@@ -299,7 +328,7 @@ const MenuShowPage = ({ params }) => {
                         + Add Product
                       </Button>
 
-                      <Reorder.Group axis="y" values={category.products} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
+                      <Reorder.Group axis="y" values={category.products || []} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
                         {category.products && category.products.map((product) => (
                           <Reorder.Item key={product.id} value={product}>
                             <div className="flex justify-between items-center mb-2 p-2 border rounded">
@@ -338,6 +367,12 @@ const MenuShowPage = ({ params }) => {
               </Reorder.Item>
             ))}
           </Reorder.Group>
+          {orderChanged && (
+            <div className="flex space-x-2 mt-4">
+              <Button onClick={handleSaveCategoriesOrder}>Save Changes</Button>
+              <Button onClick={handleCancelCategoriesOrder}>Cancel</Button>
+            </div>
+          )}
           <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
             <DialogContent>
               <DialogHeader>
