@@ -35,12 +35,11 @@ model Menu {
   position  Int
 }
 
-
 model Category {
   id        Int        @id @default(autoincrement())
   name      String
   menuId    Int
-  menu      Menu       @relation(fields: [menuId], references: [id])
+  menu      Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
   products  Product[]
   position  Int
 }
@@ -48,9 +47,9 @@ model Category {
 model Product {
   id         Int        @id @default(autoincrement())
   name       String
-  price       Float
+  price      Float
   description String?
   categoryId Int
-  category   Category   @relation(fields: [categoryId], references: [id])
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   position   Int
 }

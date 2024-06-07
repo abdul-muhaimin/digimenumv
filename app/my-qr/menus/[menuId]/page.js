@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@heroicons/react/outline';
-import { Reorder } from "framer-motion";
+import { Reorder, motion } from "framer-motion";
 import { MdDragIndicator } from "react-icons/md";
 import { toast } from 'react-toastify';
 
@@ -29,6 +29,7 @@ const MenuShowPage = ({ params }) => {
   const [currentProductId, setCurrentProductId] = useState(null);
   const [currentCategoryName, setCurrentCategoryName] = useState('');
   const [orderChanged, setOrderChanged] = useState(false);
+  const [isDragEnabled, setIsDragEnabled] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -256,15 +257,20 @@ const MenuShowPage = ({ params }) => {
     setOrderChanged(false);
   };
 
+  const toggleDrag = () => {
+    setIsDragEnabled(!isDragEnabled);
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <Button onClick={handleBack} className="mb-4">Back</Button>
+      <Button onClick={handleBack} className="mb-4 text-sm">Back</Button>
+      <Button onClick={toggleDrag} className="mb-4 ml-2 text-xs">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
       {menu ? (
         <>
           <h1 className="text-3xl font-bold mb-4">{menu.name}</h1>
           <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
             <DialogTrigger asChild>
-              <Button className="mb-4">+ Create Category</Button>
+              <Button className="mb-4 text-xs">+ Create Category</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -288,12 +294,14 @@ const MenuShowPage = ({ params }) => {
           </Dialog>
           <Reorder.Group axis="y" values={categories} onReorder={handleReorderCategories}>
             {categories.map((category) => (
-              <Reorder.Item key={category.id} value={category}>
+              <Reorder.Item key={category.id} value={category} drag={isDragEnabled ? "y" : false}>
                 <Accordion type="single" collapsible>
                   <AccordionItem key={category.id} value={category.id}>
                     <AccordionTrigger>
                       <div className="flex items-center">
-                        <MdDragIndicator className="cursor-pointer mr-4" />
+                        <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
+                          <MdDragIndicator />
+                        </motion.div>
                         {category.name}
                       </div>
                     </AccordionTrigger>
@@ -327,13 +335,14 @@ const MenuShowPage = ({ params }) => {
                       >
                         + Add Product
                       </Button>
-
                       <Reorder.Group axis="y" values={category.products || []} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
                         {category.products && category.products.map((product) => (
-                          <Reorder.Item key={product.id} value={product}>
+                          <Reorder.Item key={product.id} value={product} drag={isDragEnabled ? "y" : false}>
                             <div className="flex justify-between items-center mb-2 p-2 border rounded">
                               <div className="flex items-center">
-                                <MdDragIndicator className="cursor-pointer mr-4" />
+                                <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
+                                  <MdDragIndicator />
+                                </motion.div>
                                 <div>
                                   <p className="text-lg font-semibold">{product.name}</p>
                                   <p className="text-sm">{product.price}</p>
