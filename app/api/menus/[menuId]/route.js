@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   const { userId } = auth(req);
-  const { menuId } = params; // Extract the menuId from the request parameters
+  const { menuId } = params;
 
   if (!userId) {
     return new Response(JSON.stringify({ message: 'Authentication required' }), {
@@ -47,7 +47,7 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   const { userId } = auth(req);
-  const { menuId } = params; // Extract the menuId from the request parameters
+  const { menuId } = params;
   let data;
 
   if (!userId) {
@@ -75,6 +75,34 @@ export async function PUT(req, { params }) {
     });
 
     return new Response(JSON.stringify(updatedMenu), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ message: 'Internal server error', details: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+export async function DELETE(req, { params }) {
+  const { userId } = auth(req);
+  const { menuId } = params;
+
+  if (!userId) {
+    return new Response(JSON.stringify({ message: 'Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    await prisma.menu.delete({
+      where: { id: parseInt(menuId) },
+    });
+
+    return new Response(JSON.stringify({ message: 'Menu deleted successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

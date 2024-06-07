@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Reorder } from 'framer-motion';
 import { MdDragIndicator } from 'react-icons/md';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DotsVerticalIcon } from '@heroicons/react/outline';
 
 const QRPage = () => {
   const router = useRouter();
@@ -113,6 +115,23 @@ const QRPage = () => {
     setOrderChanged(false);
   };
 
+  const handleDeleteMenu = async (menuId) => {
+    try {
+      const response = await fetch(`/api/menus/${menuId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMenus(menus.filter(menu => menu.id !== menuId));
+        toast.success("Menu deleted successfully");
+      } else {
+        toast.error("Failed to delete menu");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the menu");
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">My QR Menus</h1>
@@ -140,9 +159,24 @@ const QRPage = () => {
                       </div>
                     </div>
                     <div>
-                      <Button onClick={() => openModal(menu)}>Edit</Button>
                       <Button onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-2">
+                            <DotsVerticalIcon className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => openModal(menu)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteMenu(menu.id)}>
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
+
                   </div>
                 </Card>
               </Reorder.Item>
