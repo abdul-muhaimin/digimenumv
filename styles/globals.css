@@ -1,4 +1,29 @@
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent body from scrolling */
+body {
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+/* Ensure the main content fits within the viewport */
+.full-vh {
+  height: 100vh;
+  overflow-y: auto; /* Allow vertical scrolling within the container if needed */
+}
+
+/* Ensure images and media are responsive */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reset and normalize CSS for consistency */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
