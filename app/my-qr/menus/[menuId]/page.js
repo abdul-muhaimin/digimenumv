@@ -34,6 +34,7 @@ const MenuShowPage = ({ params }) => {
   const [image, setImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -165,7 +166,7 @@ const MenuShowPage = ({ params }) => {
         });
 
         setCategories(updatedCategories);
-        setNewProduct({ name: '', price: '', description: '' });
+        setNewProduct({ name: '', price: '', description: '', imageUrl: '' });
         setImage(null);
         setCroppedImage(null);
         setIsProductModalOpen(false);
@@ -189,6 +190,14 @@ const MenuShowPage = ({ params }) => {
 
   const handleDeleteProduct = async (productId) => {
     try {
+      const productToDelete = categories
+        .flatMap(category => category.products)
+        .find(product => product.id === productId);
+
+      if (productToDelete && productToDelete.imageUrl) {
+        await deleteImageFromCloudinary(productToDelete.imageUrl);
+      }
+
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
       });
@@ -323,6 +332,43 @@ const MenuShowPage = ({ params }) => {
     }
   };
 
+  const deleteImageFromCloudinary = async (imageUrl, productId) => {
+    const publicId = imageUrl.split('/').pop().split('.')[0]; // Extract publicId from imageUrl
+
+    try {
+      const deleteResponse = await fetch('/api/image/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ publicId }),
+      });
+
+      if (deleteResponse.ok) {
+        toast.success("Image deleted successfully from Cloudinary");
+
+        // Now update the product to clear the imageUrl
+        const updateResponse = await fetch(`/api/products/${productId}/clear-image`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl: '' }),
+        });
+
+        if (updateResponse.ok) {
+          toast.success("Product image URL cleared successfully");
+        } else {
+          console.error('Failed to clear image URL from product:', await updateResponse.text());
+        }
+      } else {
+        console.error('Failed to delete image from Cloudinary:', await deleteResponse.text());
+      }
+    } catch (error) {
+      console.error('Error deleting image from Cloudinary:', error);
+    }
+  };
+
 
   const handleCropComplete = (croppedImage) => {
     setCroppedImage(croppedImage);
@@ -332,6 +378,25 @@ const MenuShowPage = ({ params }) => {
   const removeCroppedImage = () => {
     setCroppedImage(null);
     setImage(null);
+  };
+
+  const handleRemoveImage = async () => {
+    if (newProduct.imageUrl) {
+      await deleteImageFromCloudinary(newProduct.imageUrl, currentProductId);
+    }
+    setNewProduct({ ...newProduct, imageUrl: '' });
+    setCroppedImage(null);
+    setImage(null);
+  };
+
+
+  const handleModalClose = () => {
+    setNewProduct({ name: '', price: '', description: '' });
+    setImage(null);
+    setSelectedImage(null);
+    setCroppedImage(null);
+    setIsImageRemoved(false);
+    setEditMode(false);
   };
 
   const toggleDrag = () => {
@@ -462,7 +527,10 @@ const MenuShowPage = ({ params }) => {
               <Button onClick={handleCancelCategoriesOrder}>Cancel</Button>
             </div>
           )}
-          <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
+          <Dialog open={isProductModalOpen} onOpenChange={(isOpen) => {
+            setIsProductModalOpen(isOpen);
+            if (!isOpen) handleModalClose();
+          }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{editMode ? 'Edit Product' : 'Add Product'}</DialogTitle>
@@ -515,6 +583,12 @@ const MenuShowPage = ({ params }) => {
                   <div className="mt-4">
                     <img src={URL.createObjectURL(croppedImage)} alt="Cropped" className="w-16 h-16 object-cover mt-2 rounded-md" />
                     <Button onClick={removeCroppedImage} className="mt-2 text-xs">Remove Image</Button>
+                  </div>
+                )}
+                {editMode && newProduct.imageUrl && !croppedImage && (
+                  <div className="mt-4">
+                    <img src={newProduct.imageUrl} alt="Current" className="w-16 h-16 object-cover mt-2 rounded-md" />
+                    <Button onClick={handleRemoveImage} className="mt-2 text-xs">Remove Current Image</Button>
                   </div>
                 )}
                 <Button
