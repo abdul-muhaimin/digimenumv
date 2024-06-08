@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import getCroppedImg from '@/utils/cropImage'; // Utility function for processing the cropped image
 
-const ImageCropper = ({ imageSrc, onCropComplete }) => {
+const ImageCropper = ({ imageSrc, onCropComplete, aspectRatio = 1 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -14,12 +14,7 @@ const ImageCropper = ({ imageSrc, onCropComplete }) => {
 
   const showCroppedImage = useCallback(async () => {
     try {
-      console.log('Image Source:', imageSrc);
-      console.log('Cropped Area Pixels:', croppedAreaPixels);
-
       const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-      console.log('Cropped Image:', croppedImage);
-
       onCropComplete(croppedImage);
     } catch (e) {
       console.error('Error cropping image:', e);
@@ -32,7 +27,7 @@ const ImageCropper = ({ imageSrc, onCropComplete }) => {
         image={imageSrc}
         crop={crop}
         zoom={zoom}
-        aspect={1}
+        aspect={aspectRatio}
         onCropChange={setCrop}
         onZoomChange={setZoom}
         onCropComplete={onCropCompleteInternal}
