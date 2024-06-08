@@ -23,6 +23,11 @@ model User {
   businessIsland    String?
   businessAtoll     String?
   businessTelephone String?
+  bannerImageUrl    String?
+  avatarImageUrl    String?
+  location          String?
+  links             Json?     // JSON field to store multiple links
+  storeDescription  String?
   menus             Menu[]
 }
 

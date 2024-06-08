@@ -29,6 +29,11 @@ export async function GET(req) {
         businessIsland: true,
         businessAtoll: true,
         businessTelephone: true,
+        bannerImageUrl: true,
+        avatarImageUrl: true,
+        location: true,
+        links: true,
+        storeDescription: true,
       },
     });
 
@@ -75,7 +80,7 @@ export async function PUT(req) {
   const {
     name, email, mobile,
     businessName, businessType, businessAddress,
-    businessIsland, businessAtoll, businessTelephone
+    businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription
   } = data;
 
   try {
@@ -84,7 +89,7 @@ export async function PUT(req) {
       data: {
         name, email, mobile,
         businessName, businessType, businessAddress,
-        businessIsland, businessAtoll, businessTelephone
+        businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription
       },
     });
 

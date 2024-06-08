@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FaInstagram, FaViber, FaMapMarkerAlt, FaTelegram, FaFacebook, FaWhatsapp, FaTwitter } from 'react-icons/fa';
 
 const UserDetails = () => {
   const { isLoaded, user } = useUser();
@@ -50,6 +51,19 @@ const UserDetails = () => {
         setValue('businessIsland', data.businessIsland);
         setValue('businessAtoll', data.businessAtoll);
         setValue('businessTelephone', data.businessTelephone);
+        setValue('bannerImageUrl', data.bannerImageUrl);
+        setValue('avatarImageUrl', data.avatarImageUrl);
+        setValue('location', data.location);
+        setValue('storeDescription', data.storeDescription);
+
+        const links = data.links || {};
+        setValue('links.instaUrl', links.instaUrl);
+        setValue('links.viberUrl', links.viberUrl);
+        setValue('links.mapUrl', links.mapUrl);
+        setValue('links.telegramUrl', links.telegramUrl);
+        setValue('links.facebookUrl', links.facebookUrl);
+        setValue('links.whatsappUrl', links.whatsappUrl);
+        setValue('links.twitterUrl', links.twitterUrl);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         toast.error('Failed to fetch user data');
@@ -93,51 +107,97 @@ const UserDetails = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="max-w-md mx-auto">
+      <Card className="max-w-lg mx-auto">
         <CardHeader>
           <CardTitle>User Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...register('name')} />
+            <div className="grid grid-cols-1 gap-4">
+              <div className="mb-4">
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" {...register('name')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" {...register('email')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="mobile">Mobile</Label>
+                <Input id="mobile" {...register('mobile')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessName">Business Name</Label>
+                <Input id="businessName" {...register('businessName')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessType">Business Type</Label>
+                <Input id="businessType" {...register('businessType')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessAddress">Business Address</Label>
+                <Input id="businessAddress" {...register('businessAddress')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessIsland">Business Island</Label>
+                <Input id="businessIsland" {...register('businessIsland')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessAtoll">Business Atoll</Label>
+                <Input id="businessAtoll" {...register('businessAtoll')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="businessTelephone">Business Telephone</Label>
+                <Input id="businessTelephone" {...register('businessTelephone')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="bannerImageUrl">Banner Image URL</Label>
+                <Input id="bannerImageUrl" {...register('bannerImageUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="avatarImageUrl">Avatar Image URL</Label>
+                <Input id="avatarImageUrl" {...register('avatarImageUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="location">Location</Label>
+                <Input id="location" {...register('location')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="instaUrl">Instagram URL</Label>
+                <Input id="instaUrl" {...register('links.instaUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="viberUrl">Viber URL</Label>
+                <Input id="viberUrl" {...register('links.viberUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="mapUrl">Map URL</Label>
+                <Input id="mapUrl" {...register('links.mapUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="telegramUrl">Telegram URL</Label>
+                <Input id="telegramUrl" {...register('links.telegramUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="facebookUrl">Facebook URL</Label>
+                <Input id="facebookUrl" {...register('links.facebookUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="whatsappUrl">WhatsApp URL</Label>
+                <Input id="whatsappUrl" {...register('links.whatsappUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="twitterUrl">Twitter URL</Label>
+                <Input id="twitterUrl" {...register('links.twitterUrl')} />
+              </div>
+              <div className="mb-4">
+                <Label htmlFor="storeDescription">Store Description</Label>
+                <Input id="storeDescription" {...register('storeDescription')} />
+              </div>
+              <Button type="submit" className="w-full">
+                Save
+              </Button>
             </div>
-            <div className="mb-4">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" {...register('email')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="mobile">Mobile</Label>
-              <Input id="mobile" {...register('mobile')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessName">Business Name</Label>
-              <Input id="businessName" {...register('businessName')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessType">Business Type</Label>
-              <Input id="businessType" {...register('businessType')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessAddress">Business Address</Label>
-              <Input id="businessAddress" {...register('businessAddress')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessIsland">Business Island</Label>
-              <Input id="businessIsland" {...register('businessIsland')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessAtoll">Business Atoll</Label>
-              <Input id="businessAtoll" {...register('businessAtoll')} />
-            </div>
-            <div className="mb-4">
-              <Label htmlFor="businessTelephone">Business Telephone</Label>
-              <Input id="businessTelephone" {...register('businessTelephone')} />
-            </div>
-            <Button type="submit" className="w-full">
-              Save
-            </Button>
           </form>
         </CardContent>
       </Card>
