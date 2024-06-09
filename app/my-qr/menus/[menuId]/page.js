@@ -13,6 +13,7 @@ import { Reorder, motion } from "framer-motion";
 import { MdDragIndicator } from "react-icons/md";
 import { toast } from 'react-toastify';
 import ImageCropper from '@/components/ImageCropper'; // Assume this is the image cropper component
+import Navbar from '@/components/layout/SideBar';
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
@@ -404,6 +405,7 @@ const MenuShowPage = ({ params }) => {
   };
 
   return (
+
     <div className="container mx-auto p-4">
       <Button onClick={handleBack} className="mb-4 text-sm">Back</Button>
       <Button onClick={toggleDrag} className="mb-4 ml-2 text-xs">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
@@ -605,6 +607,7 @@ const MenuShowPage = ({ params }) => {
         <div>Loading...</div>
       )}
     </div>
+
   );
 };
 

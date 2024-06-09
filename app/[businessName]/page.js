@@ -1,7 +1,13 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp } from 'react-icons/fa'; // Import social icons
+import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp, FaCartPlus } from 'react-icons/fa'; // Import social icons
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { toast } from 'react-toastify';
+import Navbar from '@/components/layout/SideBar';
+
 
 const PublicUserPage = () => {
   const { businessName } = useParams();
@@ -36,7 +42,9 @@ const PublicUserPage = () => {
   const selectedMenu = userData.menus.find((menu) => menu.id === selectedMenuId);
 
   return (
+
     <div className="container mx-auto p-4">
+
       <div className="relative">
         {userData.bannerImageUrl && (
           <img src={userData.bannerImageUrl} alt="Banner" className="w-full h-64 object-cover rounded-md" />
@@ -45,7 +53,7 @@ const PublicUserPage = () => {
           <img src={userData.avatarImageUrl} alt="Avatar" className="absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 object-cover rounded-full border-4 border-white" />
         )}
       </div>
-      <div className="text-center mt-16">
+      <div className="text-center mt-8">
         <h1 className="text-3xl font-bold">{userData.businessName || 'Store'}</h1>
         <p className="text-lg">{userData.storeDescription}</p>
         <div className="flex justify-center space-x-4 mt-4">
@@ -56,46 +64,46 @@ const PublicUserPage = () => {
         </div>
       </div>
       <div className="mt-8">
-        <div className="flex justify-center mb-4">
-          <select
-            className="p-2 border border-gray-300 rounded-md"
-            value={selectedMenuId}
-            onChange={(e) => setSelectedMenuId(Number(e.target.value))}
-          >
+        <Tabs value={selectedMenuId} onValueChange={(value) => setSelectedMenuId(Number(value))}>
+          <TabsList className="flex justify-center mb-4">
             {userData.menus.map((menu) => (
-              <option key={menu.id} value={menu.id}>
+              <TabsTrigger key={menu.id} value={menu.id} className="px-4 py-2 mx-2 text-sm font-medium rounded-md ">
                 {menu.name}
-              </option>
+              </TabsTrigger>
             ))}
-          </select>
-        </div>
-        {selectedMenu ? (
-          <div>
-            {selectedMenu.categories.map((category) => (
-              <div key={category.id} className="mb-8">
-                <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {category.products.map((product) => (
-                    <div key={product.id} className="border rounded-md p-4">
-                      {product.imageUrl && (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-full h-32 object-cover rounded-md mb-4"
-                        />
-                      )}
-                      <h3 className="text-xl font-bold">{product.name}</h3>
-                      <p className="text-sm text-gray-600">{product.description}</p>
-                      <p className="text-lg font-semibold mt-2">{product.price} MVR</p>
-                    </div>
-                  ))}
+          </TabsList>
+          {userData.menus.map((menu) => (
+            <TabsContent key={menu.id} value={menu.id}>
+              {menu.categories.map((category) => (
+                <div key={category.id} className="mb-8">
+                  <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {category.products.map((product) => (
+                      <Card key={product.id} className="border rounded-md">
+                        {product.imageUrl && (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-48 object-cover rounded-t-md"
+                          />
+                        )}
+                        <CardContent className="p-4">
+                          <h3 className="text-xl font-bold">{product.name}</h3>
+                          <p className="text-sm text-gray-600">{product.description}</p>
+                          <p className="text-lg font-semibold mt-2">{product.price} MVR</p>
+                          <Button className="mt-4 flex items-center space-x-2">
+                            <FaCartPlus />
+                            <span>Add to Cart</span>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No menu selected</p>
-        )}
+              ))}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );

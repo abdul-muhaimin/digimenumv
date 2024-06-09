@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageCropper from '@/components/ImageCropper';
+import Navbar from '@/components/layout/SideBar';
 
 const UserDetails = () => {
   const { isLoaded, user } = useUser();
@@ -163,182 +164,185 @@ const UserDetails = () => {
   if (!userData) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle>User Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" {...register('name')} />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" {...register('email')} />
-              </div>
-              <div>
-                <Label htmlFor="mobile">Mobile</Label>
-                <Input id="mobile" {...register('mobile')} />
-              </div>
-              <div>
-                <Label htmlFor="businessName">Business Name</Label>
-                <Input id="businessName" {...register('businessName')} />
-              </div>
-              <div>
-                <Label htmlFor="businessType">Business Type</Label>
-                <Input id="businessType" {...register('businessType')} />
-              </div>
-              <div>
-                <Label htmlFor="businessAddress">Business Address</Label>
-                <Input id="businessAddress" {...register('businessAddress')} />
-              </div>
-              <div>
-                <Label htmlFor="businessIsland">Business Island</Label>
-                <Input id="businessIsland" {...register('businessIsland')} />
-              </div>
-              <div>
-                <Label htmlFor="businessAtoll">Business Atoll</Label>
-                <Input id="businessAtoll" {...register('businessAtoll')} />
-              </div>
-              <div>
-                <Label htmlFor="businessTelephone">Business Telephone</Label>
-                <Input id="businessTelephone" {...register('businessTelephone')} />
-              </div>
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input id="location" {...register('location')} />
-              </div>
-              <div>
-                <Label htmlFor="storeDescription">Store Description</Label>
-                <Input id="storeDescription" {...register('storeDescription')} />
-              </div>
-            </div>
+    <div>
 
-            <div className="mb-4">
-              <Label htmlFor="avatarImage">Avatar Image</Label>
-              {userData.avatarImageUrl && !isAvatarCropping && (
-                <div className="mb-2">
-                  <img src={userData.avatarImageUrl} alt="Avatar" className="w-16 h-16 object-cover rounded-full" />
-                  <Button onClick={() => handleRemoveImage('avatar')} className="mt-2 text-xs">
-                    Remove Avatar
-                  </Button>
+      <div className="container mx-auto p-4">
+        <Card className="max-w-3xl mx-auto">
+          <CardHeader>
+            <CardTitle>User Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" {...register('name')} />
                 </div>
-              )}
-              {!userData.avatarImageUrl && !selectedAvatar && (
-                <Input
-                  id="avatarImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange(setSelectedAvatar, setIsAvatarCropping)}
-                />
-              )}
-              {selectedAvatar && isAvatarCropping && (
-                <ImageCropper
-                  imageSrc={selectedAvatar}
-                  aspectRatio={1}
-                  onCropComplete={handleCropComplete(setCroppedAvatar, setIsAvatarCropping)}
-                />
-              )}
-              {croppedAvatar && !isAvatarCropping && (
-                <div className="mt-4">
-                  <img
-                    src={URL.createObjectURL(croppedAvatar)}
-                    alt="Cropped Avatar"
-                    className="w-16 h-16 object-cover mt-2 rounded-full"
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" {...register('email')} />
+                </div>
+                <div>
+                  <Label htmlFor="mobile">Mobile</Label>
+                  <Input id="mobile" {...register('mobile')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessName">Business Name</Label>
+                  <Input id="businessName" {...register('businessName')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessType">Business Type</Label>
+                  <Input id="businessType" {...register('businessType')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessAddress">Business Address</Label>
+                  <Input id="businessAddress" {...register('businessAddress')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessIsland">Business Island</Label>
+                  <Input id="businessIsland" {...register('businessIsland')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessAtoll">Business Atoll</Label>
+                  <Input id="businessAtoll" {...register('businessAtoll')} />
+                </div>
+                <div>
+                  <Label htmlFor="businessTelephone">Business Telephone</Label>
+                  <Input id="businessTelephone" {...register('businessTelephone')} />
+                </div>
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input id="location" {...register('location')} />
+                </div>
+                <div>
+                  <Label htmlFor="storeDescription">Store Description</Label>
+                  <Input id="storeDescription" {...register('storeDescription')} />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <Label htmlFor="avatarImage">Avatar Image</Label>
+                {userData.avatarImageUrl && !isAvatarCropping && (
+                  <div className="mb-2">
+                    <img src={userData.avatarImageUrl} alt="Avatar" className="w-16 h-16 object-cover rounded-full" />
+                    <Button onClick={() => handleRemoveImage('avatar')} className="mt-2 text-xs">
+                      Remove Avatar
+                    </Button>
+                  </div>
+                )}
+                {!userData.avatarImageUrl && !selectedAvatar && (
+                  <Input
+                    id="avatarImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange(setSelectedAvatar, setIsAvatarCropping)}
                   />
-                  <Button onClick={() => setCroppedAvatar(null)} className="mt-2 text-xs">
-                    Remove Image
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <Label htmlFor="bannerImage">Banner Image</Label>
-              {userData.bannerImageUrl && !isBannerCropping && (
-                <div className="mb-2">
-                  <img src={userData.bannerImageUrl} alt="Banner" className="w-full h-32 object-cover rounded-md" />
-                  <Button onClick={() => handleRemoveImage('banner')} className="mt-2 text-xs">
-                    Remove Banner
-                  </Button>
-                </div>
-              )}
-              {!userData.bannerImageUrl && !selectedBanner && (
-                <Input
-                  id="bannerImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange(setSelectedBanner, setIsBannerCropping)}
-                />
-              )}
-              {selectedBanner && isBannerCropping && (
-                <ImageCropper
-                  imageSrc={selectedBanner}
-                  aspectRatio={100 / 50}
-                  onCropComplete={handleCropComplete(setCroppedBanner, setIsBannerCropping)}
-                />
-              )}
-              {croppedBanner && !isBannerCropping && (
-                <div className="mt-4">
-                  <img
-                    src={URL.createObjectURL(croppedBanner)}
-                    alt="Cropped Banner"
-                    className="w-full h-32 object-cover mt-2 rounded-md"
+                )}
+                {selectedAvatar && isAvatarCropping && (
+                  <ImageCropper
+                    imageSrc={selectedAvatar}
+                    aspectRatio={1}
+                    onCropComplete={handleCropComplete(setCroppedAvatar, setIsAvatarCropping)}
                   />
-                  <Button onClick={() => setCroppedBanner(null)} className="mt-2 text-xs">
-                    Remove Image
+                )}
+                {croppedAvatar && !isAvatarCropping && (
+                  <div className="mt-4">
+                    <img
+                      src={URL.createObjectURL(croppedAvatar)}
+                      alt="Cropped Avatar"
+                      className="w-16 h-16 object-cover mt-2 rounded-full"
+                    />
+                    <Button onClick={() => setCroppedAvatar(null)} className="mt-2 text-xs">
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <Label htmlFor="bannerImage">Banner Image</Label>
+                {userData.bannerImageUrl && !isBannerCropping && (
+                  <div className="mb-2">
+                    <img src={userData.bannerImageUrl} alt="Banner" className="w-full h-32 object-cover rounded-md" />
+                    <Button onClick={() => handleRemoveImage('banner')} className="mt-2 text-xs">
+                      Remove Banner
+                    </Button>
+                  </div>
+                )}
+                {!userData.bannerImageUrl && !selectedBanner && (
+                  <Input
+                    id="bannerImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange(setSelectedBanner, setIsBannerCropping)}
+                  />
+                )}
+                {selectedBanner && isBannerCropping && (
+                  <ImageCropper
+                    imageSrc={selectedBanner}
+                    aspectRatio={100 / 50}
+                    onCropComplete={handleCropComplete(setCroppedBanner, setIsBannerCropping)}
+                  />
+                )}
+                {croppedBanner && !isBannerCropping && (
+                  <div className="mt-4">
+                    <img
+                      src={URL.createObjectURL(croppedBanner)}
+                      alt="Cropped Banner"
+                      className="w-full h-32 object-cover mt-2 rounded-md"
+                    />
+                    <Button onClick={() => setCroppedBanner(null)} className="mt-2 text-xs">
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <Label htmlFor="links.instagram">Instagram URL</Label>
+                  <Input id="links.instagram" {...register('links.instagram')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.viber">Viber URL</Label>
+                  <Input id="links.viber" {...register('links.viber')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.map">Map URL</Label>
+                  <Input id="links.map" {...register('links.map')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.telegram">Telegram URL</Label>
+                  <Input id="links.telegram" {...register('links.telegram')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.facebook">Facebook URL</Label>
+                  <Input id="links.facebook" {...register('links.facebook')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.whatsapp">WhatsApp URL</Label>
+                  <Input id="links.whatsapp" {...register('links.whatsapp')} />
+                </div>
+                <div>
+                  <Label htmlFor="links.twitter">Twitter URL</Label>
+                  <Input id="links.twitter" {...register('links.twitter')} />
+                </div>
+              </div>
+
+              {isChanged && (
+                <div className="flex justify-end space-x-2">
+                  <Button type="submit" className="w-full sm:w-auto" disabled={isAvatarCropping || isBannerCropping}>
+                    Save
+                  </Button>
+                  <Button onClick={handleCancel} className="w-full sm:w-auto">
+                    Cancel
                   </Button>
                 </div>
               )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <div>
-                <Label htmlFor="links.instagram">Instagram URL</Label>
-                <Input id="links.instagram" {...register('links.instagram')} />
-              </div>
-              <div>
-                <Label htmlFor="links.viber">Viber URL</Label>
-                <Input id="links.viber" {...register('links.viber')} />
-              </div>
-              <div>
-                <Label htmlFor="links.map">Map URL</Label>
-                <Input id="links.map" {...register('links.map')} />
-              </div>
-              <div>
-                <Label htmlFor="links.telegram">Telegram URL</Label>
-                <Input id="links.telegram" {...register('links.telegram')} />
-              </div>
-              <div>
-                <Label htmlFor="links.facebook">Facebook URL</Label>
-                <Input id="links.facebook" {...register('links.facebook')} />
-              </div>
-              <div>
-                <Label htmlFor="links.whatsapp">WhatsApp URL</Label>
-                <Input id="links.whatsapp" {...register('links.whatsapp')} />
-              </div>
-              <div>
-                <Label htmlFor="links.twitter">Twitter URL</Label>
-                <Input id="links.twitter" {...register('links.twitter')} />
-              </div>
-            </div>
-
-            {isChanged && (
-              <div className="flex justify-end space-x-2">
-                <Button type="submit" className="w-full sm:w-auto" disabled={isAvatarCropping || isBannerCropping}>
-                  Save
-                </Button>
-                <Button onClick={handleCancel} className="w-full sm:w-auto">
-                  Cancel
-                </Button>
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
