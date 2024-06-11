@@ -173,11 +173,11 @@ const PublicUserPage = () => {
                   <h2 ref={(el) => (categoryRefs.current[index] = el)} className="text-2xl text-center font-bold mb-4">{category.name}</h2>
                   <div className={`grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3`}>
                     {category.products.map((product) => (
-                      <Card key={product.id} className="border rounded-sm cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                      <Card key={product.id} className="border rounded-t-md cursor-pointer" onClick={() => setSelectedProduct(product)}>
                         <img
                           src={product.imageUrl}
                           alt={product.name || 'Placeholder Image'}
-                          className="w-full h-48 object-cover rounded-t-md"
+                          className="w-full h-48 object-cover rounded-md"
                         />
                         <CardContent className="p-4">
                           <h3 className="text-md font-bold">{product.name}</h3>
