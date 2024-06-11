@@ -2,9 +2,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs'; // Import Clerk components
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
   const sidebarRef = useRef(null);
 
   const handleClickOutside = (event) => {
@@ -18,6 +20,21 @@ const Sidebar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/users/me'); // Adjust the endpoint as needed
+        if (!response.ok) throw new Error('Failed to fetch user data');
+        const data = await response.json();
+        setUserData(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   return (
@@ -40,7 +57,7 @@ const Sidebar = () => {
         className={`fixed top-0 left-0 z-40 h-screen transition-transform transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 sm:w-64 bg-gray-50 dark:bg-gray-800`}
         aria-label="Sidebar"
       >
-        <div className="h-full px-3 py-4 overflow-y-auto">
+        <div className="h-full px-3 py-4 flex flex-col justify-between">
           <ul className="space-y-2 font-medium">
             <li>
               <Link href="/" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group mt-16">
@@ -73,6 +90,17 @@ const Sidebar = () => {
               </Link>
             </li>
           </ul>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+            <div className="flex items-center space-x-4">
+              <UserButton />
+              {userData && (
+                <div className="text-left">
+                  <p className="text-sm ">{userData.name}</p>
+                  <p className="text-xs text-gray-500">{userData.businessName}</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </aside>
     </>

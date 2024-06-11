@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   // Define pages where the sidebar should be shown
-  const showSidebarPages = ['/dashboard', '/my-qr', '/profile'];
+  const showSidebarPages = ['/dashboard', '/my-qr', '/profile', 'my-qr/menus/2'];
   const isSidebarVisible = showSidebarPages.includes(pathname);
 
   return (
@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
             {isSidebarVisible && <SideBar />}
             <div className={`flex-grow flex flex-col transition-all duration-300 ${isSidebarVisible ? 'sm:ml-64' : ''}`}>
               <ToastContainer />
-              <main className="flex-grow p-4 mt-4 ml-4">
+              <main className="">
                 {children}
               </main>
               {/* <Footer /> */}

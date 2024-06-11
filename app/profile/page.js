@@ -241,7 +241,7 @@ const UserDetails = () => {
                 {selectedAvatar && isAvatarCropping && (
                   <ImageCropper
                     imageSrc={selectedAvatar}
-                    aspectRatio={1}
+                    aspectRatio={180 / 140}
                     onCropComplete={handleCropComplete(setCroppedAvatar, setIsAvatarCropping)}
                   />
                 )}

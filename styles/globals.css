@@ -2,28 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent body from scrolling */
+/* globals.css */
+html,
 body {
-  overflow: hidden;
-  font-family: "Inter", sans-serif;
-}
-
-/* Ensure the main content fits within the viewport */
-.full-vh {
-  height: 100vh;
-  overflow-y: auto; /* Allow vertical scrolling within the container if needed */
-}
-
-/* Ensure images and media are responsive */
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Reset and normalize CSS for consistency */
-* {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+* {
   box-sizing: border-box;
+}
+
+.container {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.relative {
+  position: relative;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.card {
+  width: 100%;
+}
+
+.card img {
+  max-width: 100%;
+  height: auto;
 }
