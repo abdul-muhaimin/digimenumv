@@ -1,9 +1,8 @@
 // FloatingSummaryBar.js
 import { useCart } from '@/context/cartContext';
 import { useState } from 'react';
-import Cart from './Cart';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { FaShoppingCart } from 'react-icons/fa';
+import Cart from './Cart';
 
 const FloatingSummaryBar = () => {
   const { cart } = useCart();
@@ -31,22 +30,20 @@ const FloatingSummaryBar = () => {
   }
 
   return (
-    <div className="fixed bottom-16 right-4 bg-white dark:bg-gray-900 p-4 shadow-lg rounded-full flex items-center cursor-pointer" onClick={() => setOpen(true)}>
-      <FaShoppingCart className="mr-2" />
-      <div>
-        <p>{totalItems} {totalItems === 1 ? 'item' : 'items'}</p>
-        <p>{totalWithGST.toFixed(2)} Rf</p>
+    <>
+      <div
+        className="fixed bottom-16 right-4 bg-white dark:bg-gray-900 p-4 shadow-lg rounded-full flex items-center cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
+        <FaShoppingCart className="mr-2" />
+        <div>
+          <p>{totalItems} {totalItems === 1 ? 'item' : 'items'}</p>
+          <p>{totalWithGST.toFixed(2)} Rf</p>
+        </div>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cart</DialogTitle>
-            <DialogClose />
-          </DialogHeader>
-          <Cart />
-        </DialogContent>
-      </Dialog>
-    </div>
+
+      <Cart isOpen={open} onClose={() => setOpen(false)} />
+    </>
   );
 };
 

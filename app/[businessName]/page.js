@@ -2,7 +2,7 @@
 "use client";
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp, FaCartPlus, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp, FaPlusCircle, FaCartPlus, FaPlus, FaMinus, FaTh, FaList } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -157,6 +157,9 @@ const PublicUserPage = () => {
               <Button onClick={() => setShowCategories(!showCategories)} className="mx-2 mb-2" variant="ghost">
                 {showCategories ? 'Hide Categories' : 'Show Categories'}
               </Button>
+              <Button onClick={() => setView(view === 'grid' ? 'list' : 'grid')} className="mx-2 mb-2" variant="ghost">
+                {view === 'grid' ? <FaList /> : <FaTh />}
+              </Button>
             </div>
             {showCategories && (
               <div ref={categoryBarRef} className="flex flex-wrap justify-center bg-gray">
@@ -184,49 +187,83 @@ const PublicUserPage = () => {
                     {category.name}
                   </h2>
 
-
-                  <div className={`grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3`}>
-                    {category.products.map((product) => (
-                      <Card key={product.id} className={`border rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name || 'Placeholder Image'}
-                          className="w-full h-48 object-cover rounded-md"
-                          onClick={() => handleCardClick(product)}
-                        />
-                        <CardContent className="p-4">
-                          <h3 className="text-md font-bold">{product.name}</h3>
-                          {/* <p className="text-sm text-gray-600 dark:text-gray-300">{product.description}</p> */}
-                          <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
-                        </CardContent>
-                        <div className="mt-4 ml-2 mb-2 flex items-center  space-x-2 justify-center">
-                          {getProductQuantity(product.id) > 0 ? (
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                className="p-2"
-                                onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
-                              >
-                                <FaMinus />
+                  {view === 'grid' ? (
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {category.products.map((product) => (
+                        <Card key={product.id} className={`border rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name || 'Placeholder Image'}
+                            className="w-full h-48 object-cover rounded-md"
+                            onClick={() => handleCardClick(product)}
+                          />
+                          <CardContent className="p-4">
+                            <h3 className="text-md font-bold">{product.name}</h3>
+                            <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
+                          </CardContent>
+                          <div className="mt-4 ml-2 mb-2 flex items-center space-x-2 justify-center">
+                            {getProductQuantity(product.id) > 0 ? (
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  className="p-2"
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
+                                >
+                                  <FaMinus />
+                                </Button>
+                                <span>{getProductQuantity(product.id)}</span>
+                                <Button
+                                  className="p-2"
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
+                                >
+                                  <FaPlus />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
+                                <FaPlusCircle />
+                                {/* <span>Add to Cart</span> */}
                               </Button>
-                              <span>{getProductQuantity(product.id)}</span>
-                              <Button
-                                className="p-2"
-                                onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
-                              >
-                                <FaPlus />
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {category.products.map((product) => (
+                        <div key={product.id} className={`border p-4 rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
+                          <div onClick={() => handleCardClick(product)}>
+                            <h3 className="text-md font-bold">{product.name}</h3>
+                            <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
+                          </div>
+                          <div className="mt-4 flex items-center space-x-2 justify-center">
+                            {getProductQuantity(product.id) > 0 ? (
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  className="p-2"
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
+                                >
+                                  <FaMinus />
+                                </Button>
+                                <span>{getProductQuantity(product.id)}</span>
+                                <Button
+                                  className="p-2"
+                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
+                                >
+                                  <FaPlus />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
+                                <FaCartPlus />
+                                <span>Add to Cart</span>
                               </Button>
-                            </div>
-                          ) : (
-                            <Button onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
-                              <FaCartPlus />
-                              <span>Add to Cart</span>
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </div>
-
-                      </Card>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </TabsContent>
@@ -236,10 +273,10 @@ const PublicUserPage = () => {
       {selectedProduct && (
         <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{selectedProduct.name}</DialogTitle>
-              <DialogClose />
-            </DialogHeader>
+            {/* <DialogHeader> */}
+            <DialogTitle>{selectedProduct.name}</DialogTitle>
+
+            {/* </DialogHeader> */}
             <div className="flex flex-col items-center">
               {selectedProduct.imageUrl && (
                 <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-64 object-cover mb-4" />

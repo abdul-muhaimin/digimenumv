@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   // Define pages where the sidebar should be shown
-  const showSidebarPages = ['/dashboard', '/my-qr', '/profile', 'my-qr/menus/2'];
+  const showSidebarPages = ['/dashboard', '/my-qr', '/profile', '/my-products'];
   const isSidebarVisible = showSidebarPages.includes(pathname);
 
   return (
