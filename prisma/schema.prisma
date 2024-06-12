@@ -50,12 +50,19 @@ model Category {
 }
 
 model Product {
-  id         Int        @id @default(autoincrement())
-  name       String
-  price      Float
-  description String?
-  categoryId Int
-  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  position   Int
-  imageUrl    String? 
+  id                Int     @id @default(autoincrement())
+  name              String
+  price             Float
+  description       String?
+  categoryId        Int
+  category          Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  position          Int
+  imageUrl          String?
+  active            Int     @default(1)  // 1 for true, 0 for false
+  soldOut           Int     @default(0)  // 1 for true, 0 for false
+  discountPercentage Float?
+  discountFixed     Float?
+  likes             Int     @default(0)
+  notice            String?
+  allergyCodes      Int[]   // Array of integers to represent different allergies
 }

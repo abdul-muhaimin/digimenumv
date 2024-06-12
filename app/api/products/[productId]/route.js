@@ -14,7 +14,18 @@ export async function PUT(req, { params }) {
   }
 
   const { productId } = params;
-  const { name, price, description } = await req.json();
+  const {
+    name,
+    price,
+    description,
+    active,
+    soldOut,
+    discountPercentage,
+    discountFixed,
+    likes,
+    notice,
+    allergyCodes
+  } = await req.json();
 
   try {
     const updatedProduct = await prisma.product.update({
@@ -23,6 +34,13 @@ export async function PUT(req, { params }) {
         name,
         price: parseFloat(price),
         description,
+        active: parseInt(active),  // Make sure to convert these fields to integers
+        soldOut: parseInt(soldOut),  // Make sure to convert these fields to integers
+        discountPercentage: discountPercentage ? parseFloat(discountPercentage) : null,
+        discountFixed: discountFixed ? parseFloat(discountFixed) : null,
+        likes: parseInt(likes),  // Convert likes to integer
+        notice,
+        allergyCodes: Array.isArray(allergyCodes) ? allergyCodes.map(Number) : [],  // Ensure allergyCodes is an array of numbers
       },
     });
 

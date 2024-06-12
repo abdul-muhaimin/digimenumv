@@ -25,7 +25,7 @@ const Modal = ({ show, onClose, children }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-lg">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-md shadow-lg max-w-lg w-full">
         {children}
         <button onClick={onClose} className="mt-4 bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
           Close
@@ -107,6 +107,12 @@ const ProductsPage = () => {
   };
 
   const handleSaveChanges = async () => {
+    // Validation: Only one type of discount should be applied
+    if (editProduct.discountPercentage && editProduct.discountFixed) {
+      toast.error("Only one type of discount can be applied at a time.");
+      return;
+    }
+
     try {
       const response = await fetch(`/api/products/${editProductId}`, {
         method: 'PUT',
@@ -136,6 +142,26 @@ const ProductsPage = () => {
     }));
   };
 
+  const handleToggle = async (product, field) => {
+    const updatedProduct = { ...product, [field]: product[field] === 1 ? 0 : 1 };
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProduct),
+      });
+      if (response.ok) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === product.id ? updatedProduct : p))
+        );
+      } else {
+        toast.error('Failed to update product');
+      }
+    } catch (error) {
+      toast.error('An error occurred while updating product');
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -155,17 +181,21 @@ const ProductsPage = () => {
         accessor: 'price',
       },
       {
-        Header: 'Image',
-        accessor: 'imageUrl',
-        Cell: ({ value, row: { original } }) => (
-          <div className="flex items-center space-x-2">
-            {value && <img src={value} alt="Product" className="w-16 h-16 object-cover" />}
-            {value && (
-              <button onClick={() => handleRemoveImage(original.id)} className="text-red-500 hover:text-red-700">
-                <FiX />
-              </button>
-            )}
-          </div>
+        Header: 'Active',
+        accessor: 'active',
+        Cell: ({ row: { original } }) => (
+          <button onClick={() => handleToggle(original, 'active')}>
+            {original.active === 1 ? 'Deactivate' : 'Activate'}
+          </button>
+        ),
+      },
+      {
+        Header: 'Sold Out',
+        accessor: 'soldOut',
+        Cell: ({ row: { original } }) => (
+          <button onClick={() => handleToggle(original, 'soldOut')}>
+            {original.soldOut === 1 ? 'Mark as Available' : 'Mark as Sold Out'}
+          </button>
         ),
       },
       {
@@ -205,7 +235,21 @@ const ProductsPage = () => {
 
   const { globalFilter } = state;
 
-  console.log("Rendering table with products:", products);
+  const allergyOptions = [
+    { id: 1, name: 'Spicy' },
+    { id: 2, name: 'Contains Nuts' },
+    { id: 3, name: 'Gluten-Free' },
+    // Add more options as needed
+  ];
+
+  const handleAllergyChange = (allergyId, checked) => {
+    setEditProduct((prev) => {
+      const updatedAllergies = checked
+        ? [...prev.allergyCodes, allergyId]
+        : prev.allergyCodes.filter((id) => id !== allergyId);
+      return { ...prev, allergyCodes: updatedAllergies };
+    });
+  };
 
   return (
     <div className="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
@@ -290,6 +334,60 @@ const ProductsPage = () => {
                 value={editProduct.price}
                 onChange={(e) => handleChange('price', e.target.value)}
               />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Discount Percentage</label>
+              <Input
+                type="number"
+                value={editProduct.discountPercentage || ''}
+                onChange={(e) => handleChange('discountPercentage', e.target.value)}
+                disabled={editProduct.discountFixed}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Discount Fixed</label>
+              <Input
+                type="number"
+                value={editProduct.discountFixed || ''}
+                onChange={(e) => handleChange('discountFixed', e.target.value)}
+                disabled={editProduct.discountPercentage}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Active</label>
+              <select
+                value={editProduct.active}
+                onChange={(e) => handleChange('active', e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value={1}>Active</option>
+                <option value={0}>Inactive</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Sold Out</label>
+              <select
+                value={editProduct.soldOut}
+                onChange={(e) => handleChange('soldOut', e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value={1}>Sold Out</option>
+                <option value={0}>Available</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Allergy Codes</label>
+              {allergyOptions.map((allergy) => (
+                <label key={allergy.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={editProduct.allergyCodes.includes(allergy.id)}
+                    onChange={(e) => handleAllergyChange(allergy.id, e.target.checked)}
+                    className="mr-2"
+                  />
+                  {allergy.name}
+                </label>
+              ))}
             </div>
             <Button onClick={handleSaveChanges} className="bg-green-500 hover:bg-green-700 text-white">
               Save Changes

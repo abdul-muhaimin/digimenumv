@@ -16,9 +16,16 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }) {
   const pathname = usePathname();
 
-  // Define pages where the sidebar should be shown
-  const showSidebarPages = ['/dashboard', '/my-qr', '/profile', '/my-products'];
-  const isSidebarVisible = showSidebarPages.includes(pathname);
+  // Define a function to check if the sidebar should be visible
+  const shouldShowSidebar = (path) => {
+    const staticPaths = ['/dashboard', '/profile', '/my-products', '/my-qr'];
+    const dynamicPattern = /^\/my-qr\/.*/;
+
+    // Check if the path matches any of the static paths or the dynamic pattern
+    return staticPaths.includes(path) || dynamicPattern.test(path);
+  };
+
+  const isSidebarVisible = shouldShowSidebar(pathname);
 
   return (
     <ClerkProvider>

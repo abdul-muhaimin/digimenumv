@@ -1,14 +1,21 @@
-// PublicUserPage.js
 "use client";
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp, FaPlusCircle, FaCartPlus, FaPlus, FaMinus, FaTh, FaList } from 'react-icons/fa';
+import { FaInstagram, FaFacebook, FaTwitter, FaWhatsapp, FaPlusCircle, FaCartPlus, FaPlus, FaMinus, FaTh, FaList, FaHeart } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { useCart } from '@/context/cartContext';
 import FloatingSummaryBar from '@/components/FloatingSummaryBar';
+
+// Allergy icons mapping
+const allergyIcons = {
+  1: '🌶️', // Spicy
+  2: '🥜', // Contains Nuts
+  3: '🍞', // Gluten-Free
+  // Add more icons as needed
+};
 
 const PublicUserPage = () => {
   const { businessName } = useParams();
@@ -96,6 +103,27 @@ const PublicUserPage = () => {
 
   const handleCardClick = (product) => {
     setSelectedProduct(product);
+  };
+
+  const handleLikeClick = async (product) => {
+    try {
+      const response = await fetch(`/api/products/${product.id}/like`, { method: 'POST' });
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setUserData((prev) => ({
+          ...prev,
+          menus: prev.menus.map((menu) => ({
+            ...menu,
+            categories: menu.categories.map((category) => ({
+              ...category,
+              products: category.products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+            })),
+          })),
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to like product:', error);
+    }
   };
 
   return (
@@ -190,77 +218,114 @@ const PublicUserPage = () => {
                   {view === 'grid' ? (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {category.products.map((product) => (
-                        <Card key={product.id} className={`border rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name || 'Placeholder Image'}
-                            className="w-full h-48 object-cover rounded-md"
-                            onClick={() => handleCardClick(product)}
-                          />
-                          <CardContent className="p-4">
-                            <h3 className="text-md font-bold">{product.name}</h3>
-                            <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
-                          </CardContent>
-                          <div className="mt-4 ml-2 mb-2 flex items-center space-x-2 justify-center">
-                            {getProductQuantity(product.id) > 0 ? (
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  className="p-2"
-                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
-                                >
-                                  <FaMinus />
+                        product.active === 1 && (
+                          <Card key={product.id} className={`border rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name || 'Placeholder Image'}
+                              className="w-full h-48 object-cover rounded-md"
+                              onClick={() => handleCardClick(product)}
+                            />
+                            <CardContent className="p-4">
+                              <h3 className="text-md font-bold">{product.name}</h3>
+                              {product.discountPercentage ? (
+                                <p className="text-sm font-semibold mt-2">
+                                  <span className="line-through">{product.price} Rf</span> {product.price - (product.price * (product.discountPercentage / 100))} Rf
+                                </p>
+                              ) : product.discountFixed ? (
+                                <p className="text-sm font-semibold mt-2">
+                                  <span className="line-through">{product.price} Rf</span> {product.price - product.discountFixed} Rf
+                                </p>
+                              ) : (
+                                <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
+                              )}
+                              {product.notice && <p className="text-sm text-red-600 mt-2">{product.notice}</p>}
+                            </CardContent>
+                            <div className="mt-4 ml-2 mb-2 flex items-center space-x-2 justify-center">
+                              {getProductQuantity(product.id) > 0 ? (
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    className="p-2"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
+                                  >
+                                    <FaMinus />
+                                  </Button>
+                                  <span>{getProductQuantity(product.id)}</span>
+                                  <Button
+                                    className="p-2"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
+                                  >
+                                    <FaPlus />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button variant="ghost" onClick={(e) => { e.stopPropagation(); addToCart(product); }} disabled={product.soldOut === 1}>
+                                  {product.soldOut === 1 ? 'Sold Out' : <FaPlusCircle />}
                                 </Button>
-                                <span>{getProductQuantity(product.id)}</span>
-                                <Button
-                                  className="p-2"
-                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
-                                >
-                                  <FaPlus />
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
-                                <FaPlusCircle />
-                                {/* <span>Add to Cart</span> */}
+                              )}
+                            </div>
+                            <div className="flex justify-center mt-2">
+                              <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleLikeClick(product); }}>
+                                <FaHeart /> {product.likes}
                               </Button>
-                            )}
-                          </div>
-                        </Card>
+                            </div>
+                          </Card>
+                        )
                       ))}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
                       {category.products.map((product) => (
-                        <div key={product.id} className={`border p-4 rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
-                          <div onClick={() => handleCardClick(product)}>
-                            <h3 className="text-md font-bold">{product.name}</h3>
-                            <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
-                          </div>
-                          <div className="mt-4 flex items-center space-x-2 justify-center">
-                            {getProductQuantity(product.id) > 0 ? (
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  className="p-2"
-                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
-                                >
-                                  <FaMinus />
+                        product.active === 1 && (
+                          <div key={product.id} className={`border p-4 rounded-t-md cursor-pointer ${getProductQuantity(product.id) > 0 ? 'border-blue-500 dark:border-blue-300' : ''}`}>
+                            <div onClick={() => handleCardClick(product)}>
+                              <h3 className="text-md font-bold">{product.name}</h3>
+                              {product.discountPercentage ? (
+                                <p className="text-sm font-semibold mt-2">
+                                  <span className="line-through">{product.price} Rf</span> {product.price - (product.price * (product.discountPercentage / 100))} Rf
+                                </p>
+                              ) : product.discountFixed ? (
+                                <p className="text-sm font-semibold mt-2">
+                                  <span className="line-through">{product.price} Rf</span> {product.price - product.discountFixed} Rf
+                                </p>
+                              ) : (
+                                <p className="text-sm font-semibold mt-2">{product.price} Rf</p>
+                              )}
+                              {product.notice && <p className="text-sm text-red-600 mt-2">{product.notice}</p>}
+                            </div>
+                            <div className="mt-4 flex items-center space-x-2 justify-center">
+                              {getProductQuantity(product.id) > 0 ? (
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    className="p-2"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) - 1); }}
+                                  >
+                                    <FaMinus />
+                                  </Button>
+                                  <span>{getProductQuantity(product.id)}</span>
+                                  <Button
+                                    variant="ghost"
+                                    className="p-2"
+                                    onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
+                                  >
+                                    <FaPlus />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button variant="ghost" onClick={(e) => { e.stopPropagation(); addToCart(product); }} disabled={product.soldOut === 1}>
+                                  {product.soldOut === 1 ? 'Sold Out' : <FaCartPlus />}
+                                  <span>Add</span>
                                 </Button>
-                                <span>{getProductQuantity(product.id)}</span>
-                                <Button
-                                  className="p-2"
-                                  onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, getProductQuantity(product.id) + 1); }}
-                                >
-                                  <FaPlus />
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button onClick={(e) => { e.stopPropagation(); addToCart(product); }}>
-                                <FaCartPlus />
-                                <span>Add to Cart</span>
-                              </Button>
-                            )}
+                              )}
+                            </div>
+                            <div className="flex justify-center mt-2">
+                              {/* <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleLikeClick(product); }}>
+                                <FaHeart /> {product.likes}
+                              </Button> */}
+                            </div>
                           </div>
-                        </div>
+                        )
                       ))}
                     </div>
                   )}
@@ -273,16 +338,22 @@ const PublicUserPage = () => {
       {selectedProduct && (
         <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
           <DialogContent>
-            {/* <DialogHeader> */}
-            <DialogTitle>{selectedProduct.name}</DialogTitle>
-
-            {/* </DialogHeader> */}
+            <DialogHeader>
+              <DialogTitle>{selectedProduct.name}</DialogTitle>
+              <DialogClose />
+            </DialogHeader>
             <div className="flex flex-col items-center">
               {selectedProduct.imageUrl && (
                 <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-64 object-cover mb-4" />
               )}
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{selectedProduct.description}</p>
               <p className="text-lg font-semibold mb-4">{selectedProduct.price} MVR</p>
+              {selectedProduct.notice && <p className="text-sm text-red-600 mb-4">{selectedProduct.notice}</p>}
+              <div className="flex space-x-2 mb-4">
+                {selectedProduct.allergyCodes && selectedProduct.allergyCodes.map((code) => (
+                  <span key={code}>{allergyIcons[code]}</span>
+                ))}
+              </div>
               <div className="mt-4 flex items-center justify-between space-x-2">
                 {getProductQuantity(selectedProduct.id) > 0 ? (
                   <>
@@ -301,6 +372,9 @@ const PublicUserPage = () => {
                   </Button>
                 )}
               </div>
+              <Button variant="ghost" onClick={() => handleLikeClick(selectedProduct)} className="mt-4">
+                <FaHeart /> {selectedProduct.likes}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

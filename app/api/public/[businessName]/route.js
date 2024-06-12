@@ -35,12 +35,20 @@ export async function GET(req, { params }) {
                 id: true,
                 name: true,
                 products: {
+                  where: { active: 1 }, // Only fetch active products
                   select: {
                     id: true,
                     name: true,
                     price: true,
                     description: true,
                     imageUrl: true,
+                    active: true,
+                    soldOut: true,
+                    discountPercentage: true,
+                    discountFixed: true,
+                    likes: true,
+                    notice: true,
+                    allergyCodes: true,
                   },
                 },
               },

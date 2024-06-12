@@ -163,25 +163,25 @@ const QRPage = () => {
             <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
               {menus.map((menu) => (
                 <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
-                  <Card className="mb-4">
+                  <Card className="mb-4 pt-2 pb-4">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
-                          <MdDragIndicator className="text-xl" />
+                          <MdDragIndicator className="text-xl ml-2" />
                         </motion.div>
                         <div>
-                          <h2 className="text-xl">{menu.name}</h2>
+                          <h2 className="text-xl mb-2">{menu.name}</h2>
                           <p className="text-sm text-gray-500">
                             {menu.categoriesCount} categories, {menu.productsCount} products
                           </p>
                         </div>
                       </div>
                       <div>
-                        <Button onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
+                        <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="p-2">
-                              <DotsVerticalIcon className="h-5 w-5" />
+                            <Button variant="ghost" className="">
+                              <DotsVerticalIcon className="h-5 w-5 mt-2" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
