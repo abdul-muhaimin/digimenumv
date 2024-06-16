@@ -14,32 +14,33 @@ import { MdDragIndicator } from "react-icons/md";
 import { toast } from 'react-toastify';
 import ImageCropper from '@/components/ImageCropper'; // Assume this is the image cropper component
 import Navbar from '@/components/layout/SideBar';
+import Spinner from "@/components/ui/Spinner"; // Import the Spinner component
 
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
   const [menu, setMenu] = useState(null);
   const [categories, setCategories] = useState([]);
   const [originalCategories, setOriginalCategories] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const router = useRouter();
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '' });
   const [currentCategoryId, setCurrentCategoryId] = useState(null);
   const [currentProductId, setCurrentProductId] = useState(null);
-  const [currentCategoryName, setCurrentCategoryName] = useState('');
+  const [editMode, setEditMode] = useState(false);
   const [orderChanged, setOrderChanged] = useState(false);
   const [isDragEnabled, setIsDragEnabled] = useState(false);
-  const [image, setImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
-  const [isImageRemoved, setIsImageRemoved] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImageRemoving, setIsImageRemoving] = useState(false); // State for image removal
+  const router = useRouter();
 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`/api/menus/${menuId}`);
         const data = await response.json();
         setMenu(data);
@@ -47,6 +48,8 @@ const MenuShowPage = ({ params }) => {
         setOriginalCategories(data.categories || []);
       } catch (error) {
         console.error('Failed to fetch menu:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -55,6 +58,7 @@ const MenuShowPage = ({ params }) => {
 
   const handleAddCategory = async () => {
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/menus/${menuId}/categories`, {
         method: 'POST',
         headers: {
@@ -73,11 +77,14 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error adding category:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditCategory = async () => {
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/categories/${currentCategoryId}`, {
         method: 'PUT',
         headers: {
@@ -96,11 +103,14 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error editing category:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteCategory = async (categoryId) => {
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/categories/${categoryId}`, {
         method: 'DELETE',
       });
@@ -112,6 +122,8 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error deleting category:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,6 +132,7 @@ const MenuShowPage = ({ params }) => {
     const method = currentProductId ? 'PUT' : 'POST';
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(url, {
         method,
         headers: {
@@ -168,7 +181,6 @@ const MenuShowPage = ({ params }) => {
 
         setCategories(updatedCategories);
         setNewProduct({ name: '', price: '', description: '', imageUrl: '' });
-        setImage(null);
         setCroppedImage(null);
         setIsProductModalOpen(false);
         setEditMode(false);
@@ -178,6 +190,8 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error adding/editing product:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -191,14 +205,7 @@ const MenuShowPage = ({ params }) => {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      const productToDelete = categories
-        .flatMap(category => category.products)
-        .find(product => product.id === productId);
-
-      if (productToDelete && productToDelete.imageUrl) {
-        await deleteImageFromCloudinary(productToDelete.imageUrl);
-      }
-
+      setIsSubmitting(true);
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
       });
@@ -215,6 +222,31 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       console.error('Error deleting product:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      setIsImageRemoving(true);
+      const response = await fetch(`/api/products/${currentProductId}/image`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setNewProduct((prev) => ({
+          ...prev,
+          imageUrl: '',
+        }));
+        toast.success('Image removed successfully');
+      } else {
+        toast.error('Failed to remove image');
+      }
+    } catch (error) {
+      toast.error('An error occurred while removing image');
+    } finally {
+      setIsImageRemoving(false);
     }
   };
 
@@ -229,6 +261,7 @@ const MenuShowPage = ({ params }) => {
 
   const handleSaveCategoriesOrder = async () => {
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/menus/${menuId}/categories/reorder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -244,6 +277,8 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       toast.error("An error occurred while updating category positions");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -264,6 +299,7 @@ const MenuShowPage = ({ params }) => {
 
   const handleSaveProductsOrder = async (categoryId) => {
     try {
+      setIsSubmitting(true);
       const category = categories.find(cat => cat.id === categoryId);
       const response = await fetch(`/api/categories/${categoryId}/products/reorder`, {
         method: "PUT",
@@ -279,6 +315,8 @@ const MenuShowPage = ({ params }) => {
       }
     } catch (error) {
       toast.error("An error occurred while updating product positions");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -299,104 +337,24 @@ const MenuShowPage = ({ params }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         setSelectedImage(event.target.result);
-        setImage(file);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleImageCrop = (croppedImg) => {
+  const handleCropComplete = (croppedImg) => {
     setCroppedImage(croppedImg);
-  };
-
-  const uploadImage = async (image, productId) => {
-    const formData = new FormData();
-    formData.append('image', image);
-    formData.append('productId', productId);
-
-    try {
-      const response = await fetch('/api/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.imageUrl;
-      } else {
-        console.error('Failed to upload image:', await response.text());
-        return null;
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      return null;
-    }
-  };
-
-  const deleteImageFromCloudinary = async (imageUrl, productId) => {
-    const publicId = imageUrl.split('/').pop().split('.')[0]; // Extract publicId from imageUrl
-
-    try {
-      const deleteResponse = await fetch('/api/image/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ publicId }),
-      });
-
-      if (deleteResponse.ok) {
-        toast.success("Image deleted successfully from Cloudinary");
-
-        // Now update the product to clear the imageUrl
-        const updateResponse = await fetch(`/api/products/${productId}/clear-image`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageUrl: '' }),
-        });
-
-        if (updateResponse.ok) {
-          toast.success("Product image URL cleared successfully");
-        } else {
-          console.error('Failed to clear image URL from product:', await updateResponse.text());
-        }
-      } else {
-        console.error('Failed to delete image from Cloudinary:', await deleteResponse.text());
-      }
-    } catch (error) {
-      console.error('Error deleting image from Cloudinary:', error);
-    }
-  };
-
-
-  const handleCropComplete = (croppedImage) => {
-    setCroppedImage(croppedImage);
-    setSelectedImage(null); // Hide the cropper and show the thumbnail
+    setSelectedImage(null);
   };
 
   const removeCroppedImage = () => {
     setCroppedImage(null);
-    setImage(null);
   };
-
-  const handleRemoveImage = async () => {
-    if (newProduct.imageUrl) {
-      await deleteImageFromCloudinary(newProduct.imageUrl, currentProductId);
-    }
-    setNewProduct({ ...newProduct, imageUrl: '' });
-    setCroppedImage(null);
-    setImage(null);
-  };
-
 
   const handleModalClose = () => {
     setNewProduct({ name: '', price: '', description: '' });
-    setImage(null);
     setSelectedImage(null);
     setCroppedImage(null);
-    setIsImageRemoved(false);
     setEditMode(false);
   };
 
@@ -405,11 +363,14 @@ const MenuShowPage = ({ params }) => {
   };
 
   return (
-
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
       <Button onClick={handleBack} className="mb-4 text-sm">Back</Button>
       <Button onClick={toggleDrag} className="mb-4 ml-2 text-xs">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
-      {menu ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <Spinner />
+        </div>
+      ) : menu ? (
         <>
           <h1 className="text-3xl font-bold mb-4">{menu.name}</h1>
           <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
@@ -421,7 +382,7 @@ const MenuShowPage = ({ params }) => {
                 <DialogTitle>{editMode ? 'Edit Category' : 'Create New Category'}</DialogTitle>
               </DialogHeader>
               <div>
-                <Label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">
+                <Label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Category Name
                 </Label>
                 <Input
@@ -430,8 +391,8 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
-                <Button onClick={editMode ? handleEditCategory : handleAddCategory} className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md">
-                  {editMode ? 'Update Category' : 'Add Category'}
+                <Button onClick={editMode ? handleEditCategory : handleAddCategory} className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md" disabled={isSubmitting}>
+                  {isSubmitting ? <Spinner /> : editMode ? 'Update Category' : 'Add Category'}
                 </Button>
               </div>
             </DialogContent>
@@ -482,7 +443,7 @@ const MenuShowPage = ({ params }) => {
                       <Reorder.Group axis="y" values={category.products || []} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
                         {category.products && category.products.map((product) => (
                           <Reorder.Item key={product.id} value={product} drag={isDragEnabled ? "y" : false}>
-                            <div className="flex items-center mb-2 p-4 border rounded-md bg-white shadow-sm">
+                            <div className="flex items-center mb-2 p-4 border rounded-md bg-white shadow-sm dark:bg-gray-800">
                               {product.imageUrl && (
                                 <img
                                   src={product.imageUrl}
@@ -493,7 +454,7 @@ const MenuShowPage = ({ params }) => {
                               <div className="flex-1">
                                 <p className="text-lg font-semibold">{product.name}</p>
                                 <p className="text-sm text-gray-500">{product.price}</p>
-                                <p className="text-sm text-gray-700">{product.description}</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">{product.description}</p>
                               </div>
                               <div className="flex space-x-2">
                                 <DropdownMenu>
@@ -525,8 +486,12 @@ const MenuShowPage = ({ params }) => {
 
           {orderChanged && (
             <div className="flex space-x-2 mt-4">
-              <Button onClick={handleSaveCategoriesOrder}>Save Changes</Button>
-              <Button onClick={handleCancelCategoriesOrder}>Cancel</Button>
+              <Button onClick={handleSaveCategoriesOrder} disabled={isSubmitting}>
+                {isSubmitting ? <Spinner /> : 'Save Changes'}
+              </Button>
+              <Button onClick={handleCancelCategoriesOrder} disabled={isSubmitting}>
+                Cancel
+              </Button>
             </div>
           )}
           <Dialog open={isProductModalOpen} onOpenChange={(isOpen) => {
@@ -538,7 +503,7 @@ const MenuShowPage = ({ params }) => {
                 <DialogTitle>{editMode ? 'Edit Product' : 'Add Product'}</DialogTitle>
               </DialogHeader>
               <div>
-                <Label htmlFor="productName" className="block text-sm font-medium text-gray-700">
+                <Label htmlFor="productName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Product Name
                 </Label>
                 <Input
@@ -547,7 +512,7 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
-                <Label htmlFor="productPrice" className="block text-sm font-medium text-gray-700 mt-4">
+                <Label htmlFor="productPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
                   Product Price
                 </Label>
                 <Input
@@ -556,7 +521,7 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
-                <Label htmlFor="productDescription" className="block text-sm font-medium text-gray-700 mt-4">
+                <Label htmlFor="productDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
                   Product Description
                 </Label>
                 <Input
@@ -565,7 +530,7 @@ const MenuShowPage = ({ params }) => {
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 />
-                <Label htmlFor="productImage" className="block text-sm font-medium text-gray-700 mt-4">
+                <Label htmlFor="productImage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
                   Product Image
                 </Label>
                 <Input
@@ -590,24 +555,28 @@ const MenuShowPage = ({ params }) => {
                 {editMode && newProduct.imageUrl && !croppedImage && (
                   <div className="mt-4">
                     <img src={newProduct.imageUrl} alt="Current" className="w-16 h-16 object-cover mt-2 rounded-md" />
-                    <Button onClick={handleRemoveImage} className="mt-2 text-xs">Remove Current Image</Button>
+                    <Button onClick={handleRemoveImage} className="mt-2 text-xs" disabled={isImageRemoving}>
+                      {isImageRemoving ? <Spinner /> : 'Remove Current Image'}
+                    </Button>
                   </div>
                 )}
                 <Button
                   onClick={handleAddOrEditProduct}
                   className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md"
+                  disabled={isSubmitting}
                 >
-                  {editMode ? 'Update Product' : 'Add Product'}
+                  {isSubmitting ? <Spinner /> : editMode ? 'Update Product' : 'Add Product'}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </>
       ) : (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center min-h-[200px]">
+          <Spinner />
+        </div>
       )}
     </div>
-
   );
 };
 

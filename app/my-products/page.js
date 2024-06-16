@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTable, useSortBy, useGlobalFilter } from "react-table";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
 import { FiMoreVertical, FiX, FiTrash2, FiEdit } from "react-icons/fi";
 import 'react-toastify/dist/ReactToastify.css';
+import Switch from '@/components/Switch';
+import Spinner from '@/components/ui/Spinner'; // Import the Spinner component
 
 const GlobalFilter = ({ globalFilter, setGlobalFilter }) => {
   return (
@@ -19,13 +21,12 @@ const GlobalFilter = ({ globalFilter, setGlobalFilter }) => {
   );
 };
 
-// Custom Modal Component
 const Modal = ({ show, onClose, children }) => {
   if (!show) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-md shadow-lg max-w-lg w-full">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-lg max-w-4xl w-full">
         {children}
         <button onClick={onClose} className="mt-4 bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded">
           Close
@@ -41,6 +42,8 @@ const ProductsPage = () => {
   const [editProductId, setEditProductId] = useState(null);
   const [editProduct, setEditProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +53,7 @@ const ProductsPage = () => {
 
   const fetchProducts = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/products`);
       if (response.ok) {
         const data = await response.json();
@@ -59,6 +63,8 @@ const ProductsPage = () => {
       }
     } catch (error) {
       toast.error("An error occurred while fetching products");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,6 +73,7 @@ const ProductsPage = () => {
     if (!confirmed) return;
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
         toast.success('Product deleted successfully');
@@ -76,6 +83,8 @@ const ProductsPage = () => {
       }
     } catch (error) {
       toast.error('An error occurred while deleting product');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,6 +93,7 @@ const ProductsPage = () => {
     if (!confirmed) return;
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/products/${id}/image`, { method: 'DELETE' });
       if (response.ok) {
         toast.success('Image removed successfully');
@@ -97,6 +107,8 @@ const ProductsPage = () => {
       }
     } catch (error) {
       toast.error('An error occurred while removing image');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,13 +119,8 @@ const ProductsPage = () => {
   };
 
   const handleSaveChanges = async () => {
-    // Validation: Only one type of discount should be applied
-    if (editProduct.discountPercentage && editProduct.discountFixed) {
-      toast.error("Only one type of discount can be applied at a time.");
-      return;
-    }
-
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/products/${editProductId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -132,14 +139,25 @@ const ProductsPage = () => {
       }
     } catch (error) {
       toast.error('An error occurred while updating product');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleChange = (field, value) => {
-    setEditProduct((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setEditProduct((prev) => {
+      let updatedProduct = { ...prev, [field]: value };
+
+      // Ensure only one discount field is filled at a time
+      if (field === 'discountPercentage' && value) {
+        updatedProduct.discountFixed = '';
+      }
+      if (field === 'discountFixed' && value) {
+        updatedProduct.discountPercentage = '';
+      }
+
+      return updatedProduct;
+    });
   };
 
   const handleToggle = async (product, field) => {
@@ -184,18 +202,22 @@ const ProductsPage = () => {
         Header: 'Active',
         accessor: 'active',
         Cell: ({ row: { original } }) => (
-          <button onClick={() => handleToggle(original, 'active')}>
-            {original.active === 1 ? 'Deactivate' : 'Activate'}
-          </button>
+          <Switch
+            isChecked={original.active === 1}
+            onChange={() => handleToggle(original, 'active')}
+            label={original.active === 1 ? 'Active' : 'Inactive'}
+          />
         ),
       },
       {
         Header: 'Sold Out',
         accessor: 'soldOut',
         Cell: ({ row: { original } }) => (
-          <button onClick={() => handleToggle(original, 'soldOut')}>
-            {original.soldOut === 1 ? 'Mark as Available' : 'Mark as Sold Out'}
-          </button>
+          <Switch
+            isChecked={original.soldOut === 1}
+            onChange={() => handleToggle(original, 'soldOut')}
+            label={original.soldOut === 1 ? 'Sold Out' : 'Available'}
+          />
         ),
       },
       {
@@ -229,7 +251,7 @@ const ProductsPage = () => {
       columns,
       data: products,
     },
-    useGlobalFilter, // Use global filter hook
+    useGlobalFilter,
     useSortBy
   );
 
@@ -239,7 +261,6 @@ const ProductsPage = () => {
     { id: 1, name: 'Spicy' },
     { id: 2, name: 'Contains Nuts' },
     { id: 3, name: 'Gluten-Free' },
-    // Add more options as needed
   ];
 
   const handleAllergyChange = (allergyId, checked) => {
@@ -258,50 +279,56 @@ const ProductsPage = () => {
       </div>
       <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
       <div className="overflow-x-auto max-h-[750px]">
-        <table {...getTableProps()} className="min-w-full bg-white dark:bg-gray-800">
-          <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    key={column.id}
-                    className="px-4 py-2"
-                  >
-                    {column.render('Header')}
-                    <span>
-                      {column.isSorted
-                        ? column.isSortedDesc
-                          ? ' 🔽'
-                          : ' 🔼'
-                        : ''}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()} key={row.original.id}>
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()} key={cell.column.id} className="border px-4 py-2">
-                      {cell.render('Cell')}
-                    </td>
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <Spinner />
+          </div>
+        ) : (
+          <table {...getTableProps()} className="min-w-full bg-white dark:bg-gray-800">
+            <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700 z-10">
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
+                  {headerGroup.headers.map((column) => (
+                    <th
+                      {...column.getHeaderProps(column.getSortByToggleProps())}
+                      key={column.id}
+                      className="px-4 py-2"
+                    >
+                      {column.render('Header')}
+                      <span>
+                        {column.isSorted
+                          ? column.isSortedDesc
+                            ? ' 🔽'
+                            : ' 🔼'
+                          : ''}
+                      </span>
+                    </th>
                   ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()} key={row.original.id}>
+                    {row.cells.map((cell) => (
+                      <td {...cell.getCellProps()} key={cell.column.id} className="border px-4 py-2">
+                        {cell.render('Cell')}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <Modal show={showModal} onClose={() => setShowModal(false)}>
         {editProduct && (
-          <div>
-            <h2 className="text-xl font-bold mb-4">Edit Product</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl font-bold mb-4 col-span-full">Edit Product</h2>
             <div className="mb-4">
               <label className="block mb-2">Name</label>
               <Input
@@ -339,43 +366,37 @@ const ProductsPage = () => {
               <label className="block mb-2">Discount Percentage</label>
               <Input
                 type="number"
-                value={editProduct.discountPercentage || ''}
+                value={editProduct.discountPercentage}
                 onChange={(e) => handleChange('discountPercentage', e.target.value)}
-                disabled={editProduct.discountFixed}
+                step="0.01"
               />
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Discount Fixed</label>
+              <label className="block mb-2">Discount Fixed Amount</label>
               <Input
                 type="number"
-                value={editProduct.discountFixed || ''}
+                value={editProduct.discountFixed}
                 onChange={(e) => handleChange('discountFixed', e.target.value)}
-                disabled={editProduct.discountPercentage}
+                step="0.01"
               />
             </div>
             <div className="mb-4">
               <label className="block mb-2">Active</label>
-              <select
-                value={editProduct.active}
-                onChange={(e) => handleChange('active', e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value={1}>Active</option>
-                <option value={0}>Inactive</option>
-              </select>
+              <Switch
+                isChecked={editProduct.active === 1}
+                onChange={(e) => handleChange('active', e.target.checked ? 1 : 0)}
+                label={editProduct.active === 1 ? 'Active' : 'Inactive'}
+              />
             </div>
             <div className="mb-4">
               <label className="block mb-2">Sold Out</label>
-              <select
-                value={editProduct.soldOut}
-                onChange={(e) => handleChange('soldOut', e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value={1}>Sold Out</option>
-                <option value={0}>Available</option>
-              </select>
+              <Switch
+                isChecked={editProduct.soldOut === 1}
+                onChange={(e) => handleChange('soldOut', e.target.checked ? 1 : 0)}
+                label={editProduct.soldOut === 1 ? 'Sold Out' : 'Available'}
+              />
             </div>
-            <div className="mb-4">
+            <div className="mb-4 col-span-full">
               <label className="block mb-2">Allergy Codes</label>
               {allergyOptions.map((allergy) => (
                 <label key={allergy.id} className="flex items-center">
@@ -389,8 +410,12 @@ const ProductsPage = () => {
                 </label>
               ))}
             </div>
-            <Button onClick={handleSaveChanges} className="bg-green-500 hover:bg-green-700 text-white">
-              Save Changes
+            <Button
+              onClick={handleSaveChanges}
+              className="bg-green-500 hover:bg-green-700 text-white col-span-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <Spinner /> : 'Save Changes'}
             </Button>
           </div>
         )}

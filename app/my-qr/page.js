@@ -13,6 +13,7 @@ import { MdDragIndicator } from 'react-icons/md';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@heroicons/react/outline';
 import Navbar from "@/components/layout/SideBar";
+import Spinner from "@/components/ui/Spinner"; // Import the Spinner component
 
 const QRPage = () => {
   const router = useRouter();
@@ -24,6 +25,8 @@ const QRPage = () => {
   const [name, setName] = useState("");
   const [orderChanged, setOrderChanged] = useState(false);
   const [isDragEnabled, setIsDragEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -33,6 +36,7 @@ const QRPage = () => {
 
   const fetchMenus = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/menus`);
       if (response.ok) {
         const data = await response.json();
@@ -43,6 +47,8 @@ const QRPage = () => {
       }
     } catch (error) {
       toast.error("An error occurred while fetching menus");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,6 +66,7 @@ const QRPage = () => {
 
   const handleSave = async () => {
     try {
+      setIsSubmitting(true);
       let response;
       if (currentMenu) {
         response = await fetch(`/api/menus/${currentMenu.id}`, {
@@ -84,6 +91,8 @@ const QRPage = () => {
       }
     } catch (error) {
       toast.error("An error occurred while saving menu");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -94,6 +103,7 @@ const QRPage = () => {
 
   const handleSaveOrder = async () => {
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/menus/reorder`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -109,6 +119,8 @@ const QRPage = () => {
       }
     } catch (error) {
       toast.error("An error occurred while updating menu positions");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -119,11 +131,10 @@ const QRPage = () => {
 
   const handleDeleteMenu = async (menuId) => {
     try {
-      // Fetch categories related to the menu
+      setIsSubmitting(true);
       const categoriesResponse = await fetch(`/api/menus/${menuId}/categories`);
       if (categoriesResponse.ok) {
         const categories = await categoriesResponse.json();
-        // Delete each category
         for (const category of categories) {
           await fetch(`/api/categories/${category.id}`, {
             method: 'DELETE',
@@ -131,7 +142,6 @@ const QRPage = () => {
         }
       }
 
-      // Delete the menu
       const response = await fetch(`/api/menus/${menuId}`, {
         method: 'DELETE',
       });
@@ -144,6 +154,8 @@ const QRPage = () => {
       }
     } catch (error) {
       toast.error("An error occurred while deleting the menu");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -152,113 +164,128 @@ const QRPage = () => {
   };
 
   return (
-    <div>
-
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-4">My QR Menus</h1>
+    <div className="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
+      <h1 className="text-3xl font-bold mb-4">My QR Menus</h1>
+      <div className="flex justify-between items-center mb-4">
         <Button onClick={() => openModal()}>Create Menu</Button>
         <Button onClick={toggleDrag} className="ml-4">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
-        <div className="mt-4">
-          {menus.length > 0 ? (
-            <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
-              {menus.map((menu) => (
-                <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
-                  <Card className="mb-4 pt-2 pb-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
-                          <MdDragIndicator className="text-xl ml-2" />
-                        </motion.div>
+      </div>
+      <div className="mt-4">
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <Spinner />
+          </div>
+        ) : (
+          <>
+            {menus.length > 0 ? (
+              <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
+                {menus.map((menu) => (
+                  <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
+                    <Card className="mb-4 pt-2 pb-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
+                            <MdDragIndicator className="text-xl ml-2" />
+                          </motion.div>
+                          <div>
+                            <h2 className="text-xl mb-2">{menu.name}</h2>
+                            <p className="text-sm text-gray-500">
+                              {menu.categoriesCount} categories, {menu.productsCount} products
+                            </p>
+                          </div>
+                        </div>
                         <div>
-                          <h2 className="text-xl mb-2">{menu.name}</h2>
-                          <p className="text-sm text-gray-500">
-                            {menu.categoriesCount} categories, {menu.productsCount} products
-                          </p>
+                          <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="">
+                                <DotsVerticalIcon className="h-5 w-5 mt-2" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => openModal(menu)}>
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDeleteMenu(menu.id)}>
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                      <div>
-                        <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="">
-                              <DotsVerticalIcon className="h-5 w-5 mt-2" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => openModal(menu)}>
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteMenu(menu.id)}>
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  </Card>
-                </Reorder.Item>
-              ))}
-            </Reorder.Group>
-          ) : (
-            <div>No menus available</div>
-          )}
-        </div>
-        {orderChanged && (
-          <div className="flex space-x-2 mt-4">
-            <Button onClick={handleSaveOrder}>Save Changes</Button>
-            <Button onClick={handleCancelOrder}>Cancel</Button>
-          </div>
+                    </Card>
+                  </Reorder.Item>
+                ))}
+              </Reorder.Group>
+            ) : (
+              <div>No menus available</div>
+            )}
+          </>
         )}
-
-        <Transition appear show={isModalOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={closeModal}>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
-
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                      {currentMenu ? "Edit Menu" : "Create Menu"}
-                    </Dialog.Title>
-                    <div className="mt-2">
-                      <Label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</Label>
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="mt-1 block w-full"
-                      />
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <Button onClick={handleSave}>{currentMenu ? "Save" : "Create"}</Button>
-                      <Button onClick={closeModal} className="ml-2">Cancel</Button>
-                    </div>
-                  </Dialog.Panel>
-                </Transition.Child>
-              </div>
-            </div>
-          </Dialog>
-        </Transition>
       </div>
+      {orderChanged && (
+        <div className="flex space-x-2 mt-4">
+          <Button onClick={handleSaveOrder} disabled={isSubmitting}>
+            {isSubmitting ? <Spinner /> : 'Save Changes'}
+          </Button>
+          <Button onClick={handleCancelOrder} disabled={isSubmitting}>
+            Cancel
+          </Button>
+        </div>
+      )}
+
+      <Transition appear show={isModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                    {currentMenu ? "Edit Menu" : "Create Menu"}
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <Label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="mt-1 block w-full"
+                    />
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <Button onClick={handleSave} disabled={isSubmitting}>
+                      {isSubmitting ? <Spinner /> : currentMenu ? "Save" : "Create"}
+                    </Button>
+                    <Button onClick={closeModal} className="ml-2">
+                      Cancel
+                    </Button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 };

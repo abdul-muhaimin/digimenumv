@@ -29,7 +29,7 @@ const Cart = ({ isOpen, onClose }) => {
           <FaTimes className="cursor-pointer text-2xl" onClick={onClose} />
         </div>
         <div className="mb-4 p-4 bg-blue-100 dark:bg-blue-900 text-black dark:text-white rounded-md">
-          <p className="text-sm">Use this cart to review your order before calling the waiter. Make sure to check the quantities and items you have selected.</p>
+          <p className="text-sm">Here you can see your selected items. Use this to help you in the ordering process.</p>
         </div>
         {cart.length === 0 ? (
           <p className="text-center">Your cart is empty</p>
