@@ -29,6 +29,7 @@ model User {
   links             Json?     // JSON field to store multiple links
   storeDescription  String?
   menus             Menu[]
+  urlVisits         URLVisit[]
 }
 
 model Menu {
@@ -65,4 +66,11 @@ model Product {
   likes             Int     @default(0)
   notice            String?
   allergyCodes      Int[]   // Array of integers to represent different allergies
+}
+
+model URLVisit {
+  id        Int      @id @default(autoincrement())
+  storeId   String
+  timestamp DateTime @default(now())
+  store     User     @relation(fields: [storeId], references: [clerkId], onDelete: Cascade)
 }

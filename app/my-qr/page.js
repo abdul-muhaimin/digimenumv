@@ -164,11 +164,11 @@ const QRPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
-      <h1 className="text-3xl font-bold mb-4">My QR Menus</h1>
+    <div className="container mx-auto p-4" style={{ backgroundColor: '#FFFFFF' }}>
+      <h1 className="text-3xl font-bold mb-4 text-center" style={{ color: '#333333' }}>My Menus</h1>
       <div className="flex justify-between items-center mb-4">
-        <Button onClick={() => openModal()}>Create Menu</Button>
-        <Button onClick={toggleDrag} className="ml-4">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
+        <Button onClick={() => openModal()} style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>Create Menu</Button>
+        <Button onClick={toggleDrag} className="ml-4" style={{ backgroundColor: '#FFB84D', color: '#333333' }}>{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
       </div>
       <div className="mt-4">
         {isLoading ? (
@@ -181,25 +181,25 @@ const QRPage = () => {
               <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
                 {menus.map((menu) => (
                   <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
-                    <Card className="mb-4 pt-2 pb-4">
+                    <div className="mb-4 p-4 rounded-md shadow-lg" style={{ backgroundColor: '#F5F5F5' }}>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
-                          <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
+                          <div drag={isDragEnabled ? "y" : false} className="cursor-pointer mr-4">
                             <MdDragIndicator className="text-xl ml-2" />
-                          </motion.div>
+                          </div>
                           <div>
-                            <h2 className="text-xl mb-2">{menu.name}</h2>
-                            <p className="text-sm text-gray-500">
+                            <h2 className="text-xl mb-2" style={{ color: '#333333' }}>{menu.name}</h2>
+                            <p className="text-sm" style={{ color: '#777777' }}>
                               {menu.categoriesCount} categories, {menu.productsCount} products
                             </p>
                           </div>
                         </div>
                         <div>
-                          <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)}>View</Button>
+                          <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)} style={{ color: '#FF8400' }}>View</Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="">
-                                <DotsVerticalIcon className="h-5 w-5 mt-2" />
+                              <Button variant="ghost">
+                                <DotsVerticalIcon className="h-5 w-5 mt-2" style={{ color: '#333333' }} />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -213,22 +213,22 @@ const QRPage = () => {
                           </DropdownMenu>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   </Reorder.Item>
                 ))}
               </Reorder.Group>
             ) : (
-              <div>No menus available</div>
+              <div style={{ color: '#333333' }}>No menus available</div>
             )}
           </>
         )}
       </div>
       {orderChanged && (
         <div className="flex space-x-2 mt-4">
-          <Button onClick={handleSaveOrder} disabled={isSubmitting}>
+          <Button onClick={handleSaveOrder} disabled={isSubmitting} style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>
             {isSubmitting ? <Spinner /> : 'Save Changes'}
           </Button>
-          <Button onClick={handleCancelOrder} disabled={isSubmitting}>
+          <Button onClick={handleCancelOrder} disabled={isSubmitting} style={{ backgroundColor: '#FFB84D', color: '#333333' }}>
             Cancel
           </Button>
         </div>
@@ -259,24 +259,25 @@ const QRPage = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl" style={{ backgroundColor: '#F5F5F5' }}>
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6" style={{ color: '#333333' }}>
                     {currentMenu ? "Edit Menu" : "Create Menu"}
                   </Dialog.Title>
                   <div className="mt-2">
-                    <Label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</Label>
+                    <Label htmlFor="name" className="block text-sm font-medium" style={{ color: '#333333' }}>Name</Label>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="mt-1 block w-full"
+                      className="mt-1 block w-full border-brandOrange focus:ring-brandOrange"
+                      style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                     />
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <Button onClick={handleSave} disabled={isSubmitting}>
+                    <Button onClick={handleSave} disabled={isSubmitting} style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>
                       {isSubmitting ? <Spinner /> : currentMenu ? "Save" : "Create"}
                     </Button>
-                    <Button onClick={closeModal} className="ml-2">
+                    <Button onClick={closeModal} className="ml-2" style={{ backgroundColor: '#FFB84D', color: '#333333' }}>
                       Cancel
                     </Button>
                   </div>

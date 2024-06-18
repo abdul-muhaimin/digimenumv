@@ -146,20 +146,22 @@ const MenuShowPage = ({ params }) => {
         let productId = updatedProduct.id;
 
         if (croppedImage) {
-          const imageUrl = await uploadImage(croppedImage, productId);
-          updatedProduct.imageUrl = imageUrl;
+          const imageUrl = await uploadImage(croppedImage, `/api/image`, productId);
+          if (imageUrl) {
+            updatedProduct.imageUrl = imageUrl;
 
-          const updateResponse = await fetch(`/api/products/${productId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ imageUrl }),
-          });
+            const updateResponse = await fetch(`/api/products/${productId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ imageUrl }),
+            });
 
-          if (updateResponse.ok) {
-            const finalProduct = await updateResponse.json();
-            updatedProduct = finalProduct;
+            if (updateResponse.ok) {
+              const finalProduct = await updateResponse.json();
+              updatedProduct = finalProduct;
+            }
           }
         }
 
@@ -181,6 +183,7 @@ const MenuShowPage = ({ params }) => {
 
         setCategories(updatedCategories);
         setNewProduct({ name: '', price: '', description: '', imageUrl: '' });
+        setSelectedImage(null);
         setCroppedImage(null);
         setIsProductModalOpen(false);
         setEditMode(false);
@@ -194,6 +197,7 @@ const MenuShowPage = ({ params }) => {
       setIsSubmitting(false);
     }
   };
+
 
   const handleEditProduct = (categoryId, productId, product) => {
     setCurrentCategoryId(categoryId);
@@ -362,36 +366,59 @@ const MenuShowPage = ({ params }) => {
     setIsDragEnabled(!isDragEnabled);
   };
 
+  const uploadImage = async (image, endpoint, productId) => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('productId', productId);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Error uploading image');
+      const data = await response.json();
+      return data.imageUrl;
+    } catch (error) {
+      toast.error('Failed to upload image');
+      return null;
+    }
+  };
+
+
   return (
-    <div className="container mx-auto p-4 dark:bg-gray-900 dark:text-white">
-      <Button onClick={handleBack} className="mb-4 text-sm">Back</Button>
-      <Button onClick={toggleDrag} className="mb-4 ml-2 text-xs">{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
+    <div className="container mx-auto p-4" style={{ backgroundColor: '#FFFFFF' }}>
+
       {isLoading ? (
         <div className="flex justify-center items-center min-h-[200px]">
           <Spinner />
         </div>
       ) : menu ? (
         <>
-          <h1 className="text-3xl font-bold mb-4">{menu.name}</h1>
+          <h1 className="text-3xl font-bold mb-4 text-center" style={{ color: '#333333' }}>{menu.name}</h1>
+          <Button onClick={handleBack} className="mb-4 text-sm" style={{ backgroundColor: '#FFB84D', color: '#FFFFFF' }}>Back</Button>
+          <Button onClick={toggleDrag} className="mb-4 ml-2 text-xs" style={{ backgroundColor: '#FF8400', color: '#333333' }}>{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
           <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
             <DialogTrigger asChild>
-              <Button className="mb-4 text-xs">+ Create Category</Button>
+              <Button className="mb-4 ml-2 text-xs" style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>+ Create Category</Button>
+
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent style={{ backgroundColor: '#F5F5F5' }}>
               <DialogHeader>
-                <DialogTitle>{editMode ? 'Edit Category' : 'Create New Category'}</DialogTitle>
+                <DialogTitle style={{ color: '#333333' }}>{editMode ? 'Edit Category' : 'Create New Category'}</DialogTitle>
               </DialogHeader>
               <div>
-                <Label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label htmlFor="categoryName" className="block text-sm font-medium" style={{ color: '#333333' }}>
                   Category Name
                 </Label>
                 <Input
                   id="categoryName"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
+                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
-                <Button onClick={editMode ? handleEditCategory : handleAddCategory} className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md" disabled={isSubmitting}>
+                <Button onClick={editMode ? handleEditCategory : handleAddCategory} className="mt-4 w-full py-2 px-4 rounded-md" style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }} disabled={isSubmitting}>
                   {isSubmitting ? <Spinner /> : editMode ? 'Update Category' : 'Add Category'}
                 </Button>
               </div>
@@ -407,14 +434,14 @@ const MenuShowPage = ({ params }) => {
                         <motion.div drag={isDragEnabled ? "y" : false} dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }} className="cursor-pointer mr-4">
                           <MdDragIndicator />
                         </motion.div>
-                        {category.name}
+                        <span style={{ color: '#333333' }}>{category.name}</span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="float-right">
-                            <DotsVerticalIcon className="h-5 w-5" />
+                            <DotsVerticalIcon className="h-5 w-5" style={{ color: '#333333' }} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
@@ -433,6 +460,7 @@ const MenuShowPage = ({ params }) => {
                       </DropdownMenu>
                       <Button
                         className="mt-2 mb-4 text-xs py-1 px-2"
+                        style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}
                         onClick={() => {
                           setCurrentCategoryId(category.id);
                           setIsProductModalOpen(true);
@@ -443,7 +471,7 @@ const MenuShowPage = ({ params }) => {
                       <Reorder.Group axis="y" values={category.products || []} onReorder={(newOrder) => handleReorderProducts(category.id, newOrder)}>
                         {category.products && category.products.map((product) => (
                           <Reorder.Item key={product.id} value={product} drag={isDragEnabled ? "y" : false}>
-                            <div className="flex items-center mb-2 p-4 border rounded-md bg-white shadow-sm dark:bg-gray-800">
+                            <div className="flex items-center mb-2 p-4 border rounded-md shadow-sm" style={{ backgroundColor: '#F5F5F5' }}>
                               {product.imageUrl && (
                                 <img
                                   src={product.imageUrl}
@@ -452,15 +480,15 @@ const MenuShowPage = ({ params }) => {
                                 />
                               )}
                               <div className="flex-1">
-                                <p className="text-lg font-semibold">{product.name}</p>
-                                <p className="text-sm text-gray-500">{product.price}</p>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">{product.description}</p>
+                                <p className="text-lg font-semibold" style={{ color: '#333333' }}>{product.name}</p>
+                                <p className="text-sm" style={{ color: '#777777' }}>{product.price}</p>
+                                <p className="text-sm" style={{ color: '#777777' }}>{product.description}</p>
                               </div>
                               <div className="flex space-x-2">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="p-2">
-                                      <DotsVerticalIcon className="h-5 w-5" />
+                                      <DotsVerticalIcon className="h-5 w-5" style={{ color: '#333333' }} />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
@@ -486,10 +514,10 @@ const MenuShowPage = ({ params }) => {
 
           {orderChanged && (
             <div className="flex space-x-2 mt-4">
-              <Button onClick={handleSaveCategoriesOrder} disabled={isSubmitting}>
+              <Button onClick={handleSaveCategoriesOrder} disabled={isSubmitting} style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>
                 {isSubmitting ? <Spinner /> : 'Save Changes'}
               </Button>
-              <Button onClick={handleCancelCategoriesOrder} disabled={isSubmitting}>
+              <Button onClick={handleCancelCategoriesOrder} disabled={isSubmitting} style={{ backgroundColor: '#FFB84D', color: '#333333' }}>
                 Cancel
               </Button>
             </div>
@@ -498,39 +526,42 @@ const MenuShowPage = ({ params }) => {
             setIsProductModalOpen(isOpen);
             if (!isOpen) handleModalClose();
           }}>
-            <DialogContent>
+            <DialogContent style={{ backgroundColor: '#F5F5F5' }}>
               <DialogHeader>
-                <DialogTitle>{editMode ? 'Edit Product' : 'Add Product'}</DialogTitle>
+                <DialogTitle style={{ color: '#333333' }}>{editMode ? 'Edit Product' : 'Add Product'}</DialogTitle>
               </DialogHeader>
               <div>
-                <Label htmlFor="productName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <Label htmlFor="productName" className="block text-sm font-medium" style={{ color: '#333333' }}>
                   Product Name
                 </Label>
                 <Input
                   id="productName"
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
+                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
-                <Label htmlFor="productPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
+                <Label htmlFor="productPrice" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
                   Product Price
                 </Label>
                 <Input
                   id="productPrice"
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
+                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
-                <Label htmlFor="productDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
+                <Label htmlFor="productDescription" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
                   Product Description
                 </Label>
                 <Input
                   id="productDescription"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
+                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
-                <Label htmlFor="productImage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-4">
+                <Label htmlFor="productImage" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
                   Product Image
                 </Label>
                 <Input
@@ -538,7 +569,8 @@ const MenuShowPage = ({ params }) => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
+                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
                 {selectedImage && (
                   <ImageCropper
@@ -549,20 +581,21 @@ const MenuShowPage = ({ params }) => {
                 {croppedImage && (
                   <div className="mt-4">
                     <img src={URL.createObjectURL(croppedImage)} alt="Cropped" className="w-16 h-16 object-cover mt-2 rounded-md" />
-                    <Button onClick={removeCroppedImage} className="mt-2 text-xs">Remove Image</Button>
+                    <Button onClick={removeCroppedImage} className="mt-2 text-xs" style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>Remove Image</Button>
                   </div>
                 )}
                 {editMode && newProduct.imageUrl && !croppedImage && (
                   <div className="mt-4">
                     <img src={newProduct.imageUrl} alt="Current" className="w-16 h-16 object-cover mt-2 rounded-md" />
-                    <Button onClick={handleRemoveImage} className="mt-2 text-xs" disabled={isImageRemoving}>
+                    <Button onClick={handleRemoveImage} className="mt-2 text-xs" style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }} disabled={isImageRemoving}>
                       {isImageRemoving ? <Spinner /> : 'Remove Current Image'}
                     </Button>
                   </div>
                 )}
                 <Button
                   onClick={handleAddOrEditProduct}
-                  className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-md"
+                  className="mt-4 w-full py-2 px-4 rounded-md"
+                  style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? <Spinner /> : editMode ? 'Update Product' : 'Add Product'}

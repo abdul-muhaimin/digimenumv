@@ -1,0 +1,8 @@
+-- DropForeignKey
+ALTER TABLE "URLVisit" DROP CONSTRAINT "URLVisit_storeId_fkey";
+
+-- AlterTable
+ALTER TABLE "URLVisit" ALTER COLUMN "storeId" SET DATA TYPE TEXT;
+
+-- AddForeignKey
+ALTER TABLE "URLVisit" ADD CONSTRAINT "URLVisit_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "User"("clerkId") ON DELETE CASCADE ON UPDATE CASCADE;

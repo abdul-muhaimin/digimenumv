@@ -1,12 +1,19 @@
 "use client"
 import { SignIn } from '@clerk/nextjs';
+import Header from '@/components/homepage/Header';
+
 
 const SignInPage = () => {
 
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <SignIn />
+    <div>
+      <Header />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="flex justify-center">
+          <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
+        </div>
+
       </div>
     </div>
   );

@@ -36,6 +36,15 @@ module.exports = {
         'bellota': ['"Bellota"', 'cursive'],
 
       },
+      colors: {
+        brandWhite: '#F5F5F5',
+        brandBlack: '#333333',
+        brandOrange: '#FF8400',
+        lightBrandOrange: '#FFB84D',
+        brandGray: '#CCCCCC',
+        brandDarkGray: '#777777',
+
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

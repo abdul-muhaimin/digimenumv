@@ -1,58 +1,40 @@
 const { PrismaClient } = require('@prisma/client');
-const { faker } = require('@faker-js/faker'); // Use @faker-js/faker
 const prisma = new PrismaClient();
 
-const clerkId = 'user_2hZzw4oNBxvVnePM9nWFAOqRjfm';
+const seed = async () => {
+  const now = new Date();
 
-async function main() {
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    include: {
-      menus: {
-        include: {
-          categories: {
-            include: {
-              products: {
-                orderBy: {
-                  position: 'asc'
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
+  // Seed URL visits for the past 7 days
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
 
-  if (!user) {
-    console.log('User not found');
-    return;
-  }
+    // Generate a random number of visits for the day (between 5 and 20)
+    const visitCount = Math.floor(Math.random() * 16) + 5;
 
-  for (const menu of user.menus) {
-    for (const category of menu.categories) {
-      let startPosition = category.products.length > 0 ? category.products[category.products.length - 1].position + 1 : 0;
+    for (let j = 0; j < visitCount; j++) {
+      const randomHour = Math.floor(Math.random() * 24);
+      const randomMinute = Math.floor(Math.random() * 60);
+      const randomSecond = Math.floor(Math.random() * 60);
 
-      for (let i = 0; i < 5; i++) {
-        await prisma.product.create({
-          data: {
-            name: faker.commerce.productName(),
-            price: parseFloat(faker.commerce.price()),
-            description: faker.lorem.paragraph(),
-            categoryId: category.id,
-            imageUrl: '/placeholder.png', // or any other placeholder image URL
-            position: startPosition++
-          }
-        });
-      }
+      const visitTime = new Date(day);
+      visitTime.setHours(randomHour);
+      visitTime.setMinutes(randomMinute);
+      visitTime.setSeconds(randomSecond);
+
+      await prisma.uRLVisit.create({
+        data: {
+          storeId: 'user_2hZzw4oNBxvVnePM9nWFAOqRjfm',
+          timestamp: visitTime,
+        },
+      });
     }
   }
 
-  console.log('Seeding completed');
-}
+  console.log('Realistic URL visits have been seeded');
+};
 
-main()
-  .catch(e => {
+seed()
+  .catch((e) => {
     console.error(e);
     process.exit(1);
   })

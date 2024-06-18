@@ -1,0 +1,25 @@
+<svg width="300" height="150" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .digi {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      fill: #333333; /* brandBlack */
+    }
+    .menu {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      fill: #333333; /* brandBlack */
+    }
+    .dhivehi {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      fill: #FF8400; /* brandYellow */
+    }
+  </style>
+  <text x="50" y="50" class="digi">DIGI</text>
+  <text x="150" y="50" class="dhivehi">މެނޫ</text>
+  <text x="75" y="100" class="menu">MENU</text>
+</svg>

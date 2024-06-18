@@ -1,0 +1,32 @@
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      fill: black;
+    }
+    .subtitle {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+      fill: black;
+    }
+    .combined {
+      font-family: 'Arial', sans-serif;
+      font-size: 40px;
+      font-weight: bold;
+    }
+    .digi {
+      fill: black;
+    }
+    .dhivehi {
+      fill: orange;
+    }
+  </style>
+  <text x="20" y="40" class="combined">
+    <tspan class="digi">DIGI</tspan>
+    <tspan class="dhivehi">މެނޫ</tspan>
+  </text>
+  <text x="20" y="80" class="subtitle">MENU</text>
+</svg>

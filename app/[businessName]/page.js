@@ -1,4 +1,5 @@
 "use client";
+// PublicUserPage.js
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,13 @@ const PublicUserPage = () => {
         setUserData(data);
         setSelectedMenuId(data.menus?.[0]?.id || null);
         console.log('User data fetched successfully:', data);
+
+        // Track the visit
+        await fetch('/api/track-visit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storeId: data.clerkId }), // Use clerkId as storeId
+        });
       } catch (error) {
         console.error('Failed to fetch user data:', error);
         setError('Failed to load user data. Please try again later.');
