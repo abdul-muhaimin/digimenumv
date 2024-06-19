@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
@@ -41,7 +41,9 @@ const Header = () => {
             <a href="#features" onClick={(e) => handleScroll(e, 'features')} className="cursor-pointer text-brandBlack">Features</a>
             <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="cursor-pointer text-brandBlack">Pricing</a>
           </nav>
-          <Button className="bg-[#FF8400] text-white hidden md:block">Sign In</Button>
+          <Link legacyBehavior href="/sign-in" passHref>
+            <Button className="bg-[#FF8400] text-white hidden md:block">Sign In</Button>
+          </Link>
           <button className="md:hidden ml-4" onClick={toggleMenu}>
             {isOpen ? <XIcon className="w-6 h-6 text-brandBlack" /> : <MenuIcon className="w-6 h-6 text-brandBlack" />}
           </button>
@@ -56,7 +58,9 @@ const Header = () => {
           <a href="#benefits" onClick={(e) => handleScroll(e, 'benefits')} className="block py-2 px-4 text-brandBlack">Benefits</a>
           <a href="#features" onClick={(e) => handleScroll(e, 'features')} className="block py-2 px-4 text-brandBlack">Features</a>
           <a href="#pricing" onClick={(e) => handleScroll(e, 'pricing')} className="block py-2 px-4 text-brandBlack">Pricing</a>
-          <Button className="bg-[#FF8400] text-white w-full py-2 mt-2">Sign In</Button>
+          <Link legacyBehavior href="/sign-in" passHref>
+            <Button className="bg-[#FF8400] text-white w-full py-2 mt-2">Sign In</Button>
+          </Link>
         </nav>
       )}
     </header>
