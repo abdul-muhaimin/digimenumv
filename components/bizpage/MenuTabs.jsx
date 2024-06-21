@@ -7,27 +7,29 @@ const MenuTabs = ({ menus, selectedMenuId, setSelectedMenuId }) => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900">
+    <div className="w-full bg-brandWhite dark:bg-brandBlack mt-2">
       <Tab.Group
         selectedIndex={menus.findIndex((menu) => menu.id === selectedMenuId)}
         onChange={handleTabChange}
       >
         <Tab.List className="flex flex-wrap justify-center space-x-4 px-4 py-2 mb-0">
-          {menus.map((menu, index) => (
+          {menus.map((menu) => (
             <Tab
               key={menu.id}
-              className="px-2 py-2 text-sm font-medium rounded-md"
+              className={({ selected }) =>
+                `px-2 py-2 text-sm font-medium rounded-md ${
+                  selected
+                    ? "text-white bg-brandOrange"
+                    : "text-brandBlack dark:text-brandWhite"
+                }`
+              }
             >
-              {({ selected }) => (
-                <span className={selected ? "text-blue-600" : "text-gray-600"}>
-                  {menu.name}
-                </span>
-              )}
+              {menu.name}
             </Tab>
           ))}
         </Tab.List>
       </Tab.Group>
-      <hr className="border-gray-300 dark:border-gray-700 w-full my-0" />
+      <hr className="border-brandGray dark:border-brandDarkGray w-full my-0" />
     </div>
   );
 };

@@ -7,7 +7,7 @@ const BannerAvatar = ({ bannerImageUrl, avatarImageUrl }) => {
         <img
           src={bannerImageUrl}
           alt="Banner"
-          className="w-full h-32 sm:h-48 md:h-64 object-cover"
+          className="w-full h-36 sm:h-56 md:h-74 object-cover"
         />
       )}
       <div className="relative">

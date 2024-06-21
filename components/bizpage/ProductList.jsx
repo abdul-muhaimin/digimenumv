@@ -1,7 +1,8 @@
 import React from "react";
-import { FaPlusCircle, FaCartPlus, FaPlus, FaMinus } from "react-icons/fa";
+import { FaCartPlus, FaPlus, FaMinus } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 const ProductList = ({
   view,
@@ -16,10 +17,11 @@ const ProductList = ({
     <div key={category.id} className="mb-8 mt-1">
       <h2
         ref={(el) => (categoryRefs.current[index] = el)}
-        className="text-xl sm:text-2xl text-center font-bold mb-4 w-full bg-blue-100 dark:bg-blue-900 text-black dark:text-white py-2 font-roboto-slab"
+        className="text-xl sm:text-2xl text-center font-bold mb-4 w-full bg-lightBrandOrange dark:bg-brandOrange text-brandBlack dark:text-brandWhite py-2 font-roboto-slab"
       >
         {category.name}
       </h2>
+
       {view === "grid" ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {category.products.map(
@@ -27,18 +29,35 @@ const ProductList = ({
               product.active === 1 && (
                 <Card
                   key={product.id}
-                  className={`border rounded-md cursor-pointer ${
+                  className={`border rounded-md cursor-pointer overflow-hidden ${
                     getProductQuantity(product.id) > 0
                       ? "border-blue-500 dark:border-blue-300"
                       : ""
                   }`}
                 >
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name || "Placeholder Image"}
-                    className="w-full h-32 sm:h-48 object-cover rounded-t-md"
+                  <div
+                    className="relative w-full h-32 sm:h-48 lg:h-64"
                     onClick={() => handleCardClick(product)}
-                  />
+                  >
+                    <Image
+                      src={product.imageUrl || "/placeholder.png"}
+                      alt={product.name || "Placeholder Image"}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      style={{ objectFit: "cover" }}
+                      className="rounded-t-md"
+                    />
+                    {product.discountPercentage && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {product.discountPercentage}% OFF
+                      </div>
+                    )}
+                    {product.discountFixed && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {product.discountFixed} Rf OFF
+                      </div>
+                    )}
+                  </div>
                   <CardContent className="p-4">
                     <h3 className="text-sm sm:text-md font-bold">
                       {product.name}
@@ -67,7 +86,7 @@ const ProductList = ({
                       </p>
                     )}
                   </CardContent>
-                  <div className="mt-4 ml-2 mb-2 flex items-center space-x-2 justify-center">
+                  <div className="mt-0 ml-2 mb-0 flex items-center space-x-2 justify-center">
                     {getProductQuantity(product.id) > 0 ? (
                       <div className="flex items-center space-x-2">
                         <Button
@@ -98,14 +117,15 @@ const ProductList = ({
                       </div>
                     ) : (
                       <Button
-                        variant="ghost"
+                        variant="pill"
+                        className="bg-lightBrandOrange hover:bg-brandOrange text-brandBlack dark:text-brandWhite"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(product);
                         }}
                         disabled={product.soldOut === 1}
                       >
-                        {product.soldOut === 1 ? "Sold Out" : <FaPlusCircle />}
+                        {product.soldOut === 1 ? "Sold Out" : "Add"}
                       </Button>
                     )}
                   </div>
@@ -187,15 +207,15 @@ const ProductList = ({
                       </div>
                     ) : (
                       <Button
-                        variant="ghost"
+                        variant="pill"
+                        className="bg-lightBrandOrange hover:bg-brandOrange text-brandBlack dark:text-brandWhite"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(product);
                         }}
                         disabled={product.soldOut === 1}
                       >
-                        {product.soldOut === 1 ? "Sold Out" : <FaCartPlus />}
-                        <span>Add</span>
+                        {product.soldOut === 1 ? "Sold Out" : "Add"}
                       </Button>
                     )}
                   </div>

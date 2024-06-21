@@ -3,6 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { FaMinus, FaPlus, FaCartPlus } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import allergyIcons from "@/utils/allergyIcons"; // Assuming this utility file exists for allergy icons
 
 const ProductModal = ({
@@ -51,19 +52,54 @@ const ProductModal = ({
                     >
                       {selectedProduct.name}
                     </Dialog.Title>
-                    <div className="mt-2">
+                    <div className="mt-2 relative">
                       {selectedProduct.imageUrl && (
-                        <img
-                          src={selectedProduct.imageUrl}
-                          alt={selectedProduct.name}
-                          className="w-full h-32 sm:h-48 object-cover mb-4"
-                        />
+                        <div className="relative w-full h-64 sm:h-80 lg:h-96 mb-4">
+                          <Image
+                            src={selectedProduct.imageUrl}
+                            alt={selectedProduct.name}
+                            fill
+                            style={{ objectFit: "contain" }}
+                            className="rounded"
+                          />
+                          {selectedProduct.discountPercentage && (
+                            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                              {selectedProduct.discountPercentage}% OFF
+                            </div>
+                          )}
+                          {selectedProduct.discountFixed && (
+                            <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                              {selectedProduct.discountFixed} Rf OFF
+                            </div>
+                          )}
+                        </div>
                       )}
                       <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
                         {selectedProduct.description}
                       </p>
-                      <p className="text-lg font-semibold mb-4">
-                        {selectedProduct.price} MVR
+                      <p className="text-lg text-gray-500 dark:text-gray-300 font-semibold mb-4">
+                        {selectedProduct.discountPercentage ? (
+                          <>
+                            <span className="line-through">
+                              {selectedProduct.price} Rf
+                            </span>{" "}
+                            {selectedProduct.price -
+                              selectedProduct.price *
+                                (selectedProduct.discountPercentage / 100)}{" "}
+                            Rf
+                          </>
+                        ) : selectedProduct.discountFixed ? (
+                          <>
+                            <span className="line-through">
+                              {selectedProduct.price} Rf
+                            </span>{" "}
+                            {selectedProduct.price -
+                              selectedProduct.discountFixed}{" "}
+                            Rf
+                          </>
+                        ) : (
+                          `${selectedProduct.price} Rf`
+                        )}
                       </p>
                       {selectedProduct.notice && (
                         <p className="text-sm text-red-600 mb-4">
@@ -104,10 +140,12 @@ const ProductModal = ({
                             </Button>
                           </>
                         ) : (
-                          <Button onClick={() => addToCart(selectedProduct)}>
-                            <FaCartPlus />
-                            <span>Add</span>
-                          </Button>
+                          !selectedProduct.soldOut && (
+                            <Button onClick={() => addToCart(selectedProduct)}>
+                              <FaCartPlus />
+                              <span>Add</span>
+                            </Button>
+                          )
                         )}
                       </div>
                     </div>

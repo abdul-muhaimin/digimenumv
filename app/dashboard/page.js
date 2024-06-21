@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import Spinner from '@/components/ui/Spinner'; // Import the Spinner component
 import { useUser } from '@clerk/nextjs';
 import { useUpsertUser } from '@/hooks/useUpsertUser';
+import OnboardingModal from '@/components/OnboardingModal';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
@@ -16,8 +17,33 @@ const DashboardPage = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [timeFrame, setTimeFrame] = useState('daily');
   const [loading, setLoading] = useState(true); // Add loading state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [additionalData, setAdditionalData] = useState(null);
 
-  useUpsertUser(isLoaded, isSignedIn, user);
+  useEffect(() => {
+    const checkUserOnboarding = async () => {
+      if (isLoaded && isSignedIn && user) {
+        try {
+          const response = await fetch(`/api/users/${user.id}/check-onboarding`);
+          const data = await response.json();
+          if (data.onboardingIncomplete) {
+            setShowOnboarding(true);
+          }
+        } catch (error) {
+          console.error('Error checking user onboarding:', error);
+        }
+      }
+    };
+
+    checkUserOnboarding();
+  }, [isLoaded, isSignedIn, user]);
+
+  useUpsertUser(isLoaded, isSignedIn, user, additionalData);
+
+  const handleOnboardingComplete = (data) => {
+    setAdditionalData(data);
+    setShowOnboarding(false);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -112,6 +138,12 @@ const DashboardPage = () => {
       <div className="flex justify-center items-center mb-4 w-full">
         <h1 className="text-2xl font-bold" style={{ color: '#333333' }}>Dashboard</h1>
       </div>
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        user={user}
+        onComplete={handleOnboardingComplete}
+      />
       {loading ? (
         <Spinner />
       ) : (

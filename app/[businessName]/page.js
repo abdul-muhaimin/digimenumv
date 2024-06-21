@@ -4,15 +4,15 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cartContext';
-import FloatingSummaryBar from '@/components/FloatingSummaryBar';
-import BannerAvatar from '@/components/BannerAvatar';
-import BusinessInfo from '@/components/BusinessInfo';
-import MenuTabs from '@/components/MenuTabs';
-import CategoryBar from '@/components/CategoryBar';
-import ProductList from '@/components/ProductList';
-import ProductModal from '@/components/ProductModal';
-import SearchBar from '@/components/SearchBar';
-import SplashLoading from '@/components/SplashLoading';
+import FloatingSummaryBar from '@/components/bizpage/FloatingSummaryBar';
+import BannerAvatar from '@/components/bizpage/BannerAvatar';
+import BusinessInfo from '@/components/bizpage/BusinessInfo';
+import MenuTabs from '@/components/bizpage/MenuTabs';
+import CategoryBar from '@/components/bizpage/CategoryBar';
+import ProductList from '@/components/bizpage/ProductList';
+import ProductModal from '@/components/bizpage/ProductModal';
+import SearchBar from '@/components/bizpage/SearchBar';
+import SplashLoading from '@/components/bizpage/SplashLoading';
 
 const PublicUserPage = () => {
   const { businessName } = useParams();
@@ -122,40 +122,48 @@ const PublicUserPage = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 text-black dark:text-white">
-      <BannerAvatar bannerImageUrl={userData.bannerImageUrl} avatarImageUrl={userData.avatarImageUrl} />
-      <BusinessInfo businessName={userData.businessName} storeDescription={userData.storeDescription} links={userData.links} />
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
-        <MenuTabs menus={userData.menus} selectedMenuId={selectedMenuId} setSelectedMenuId={handleMenuTabClick} />
-        <CategoryBar
-          categories={getCategories()}
-          categoryRefs={categoryRefs}
-          showCategories={showCategories}
-          setShowCategories={setShowCategories}
-          setView={setView}
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen flex flex-col justify-between">
+      <div>
+        <BannerAvatar bannerImageUrl={userData.bannerImageUrl} avatarImageUrl={userData.avatarImageUrl} />
+        <BusinessInfo businessName={userData.businessName} storeDescription={userData.storeDescription} links={userData.links} />
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+          <MenuTabs menus={userData.menus} selectedMenuId={selectedMenuId} setSelectedMenuId={handleMenuTabClick} />
+          <CategoryBar
+            categories={getCategories()}
+            categoryRefs={categoryRefs}
+            showCategories={showCategories}
+            setShowCategories={setShowCategories}
+            setView={setView}
+            view={view}
+            showSearch={showSearch}
+            setShowSearch={setShowSearch}
+          />
+          {showSearch && <SearchBar onSearch={handleSearch} />}
+        </div>
+        <ProductList
           view={view}
-          showSearch={showSearch}
-          setShowSearch={setShowSearch}
+          categories={getCategories()}
+          handleCardClick={handleCardClick}
+          getProductQuantity={getProductQuantity}
+          addToCart={addToCart}
+          updateQuantity={updateQuantity}
+          categoryRefs={categoryRefs}
         />
-        {showSearch && <SearchBar onSearch={handleSearch} />}
+        <ProductModal
+          selectedProduct={selectedProduct}
+          setSelectedProduct={setSelectedProduct}
+          getProductQuantity={getProductQuantity}
+          addToCart={addToCart}
+          updateQuantity={updateQuantity}
+        />
+        <FloatingSummaryBar />
       </div>
-      <ProductList
-        view={view}
-        categories={getCategories()}
-        handleCardClick={handleCardClick}
-        getProductQuantity={getProductQuantity}
-        addToCart={addToCart}
-        updateQuantity={updateQuantity}
-        categoryRefs={categoryRefs}
-      />
-      <ProductModal
-        selectedProduct={selectedProduct}
-        setSelectedProduct={setSelectedProduct}
-        getProductQuantity={getProductQuantity}
-        addToCart={addToCart}
-        updateQuantity={updateQuantity}
-      />
-      <FloatingSummaryBar />
+      <footer className="mt-8 text-center py-4">
+        <hr className="border-gray-300 dark:border-gray-700 my-4" />
+        <p className="text-gray-500 dark:text-gray-400">
+          Powered by <a href="/" className="text-brandOrange">digimenu.mv</a> &reg;
+        </p>
+      </footer>
     </div>
   );
 };

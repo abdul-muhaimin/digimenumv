@@ -11,22 +11,22 @@ const BusinessInfo = ({ businessName, storeDescription, links }) => {
       <div className="flex flex-wrap justify-center space-x-4 mt-4">
         {links?.instagram && (
           <a href={links.instagram} target="_blank" rel="noopener noreferrer">
-            <FaInstagram className="text-xl sm:text-2xl" />
+            <FaInstagram className="text-xl sm:text-2xl text-pink-500" />
           </a>
         )}
         {links?.facebook && (
           <a href={links.facebook} target="_blank" rel="noopener noreferrer">
-            <FaFacebook className="text-xl sm:text-2xl" />
+            <FaFacebook className="text-xl sm:text-2xl text-blue-600" />
           </a>
         )}
         {links?.twitter && (
           <a href={links.twitter} target="_blank" rel="noopener noreferrer">
-            <FaTwitter className="text-xl sm:text-2xl" />
+            <FaTwitter className="text-xl sm:text-2xl text-blue-400" />
           </a>
         )}
         {links?.whatsapp && (
           <a href={links.whatsapp} target="_blank" rel="noopener noreferrer">
-            <FaWhatsapp className="text-xl sm:text-2xl" />
+            <FaWhatsapp className="text-xl sm:text-2xl text-green-500" />
           </a>
         )}
       </div>

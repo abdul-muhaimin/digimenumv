@@ -16,6 +16,8 @@ import ImageCropper from '@/components/ImageCropper'; // Assume this is the imag
 import Navbar from '@/components/layout/SideBar';
 import Spinner from "@/components/ui/Spinner"; // Import the Spinner component
 
+
+
 const MenuShowPage = ({ params }) => {
   const { menuId } = params;
   const [menu, setMenu] = useState(null);
@@ -36,6 +38,7 @@ const MenuShowPage = ({ params }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImageRemoving, setIsImageRemoving] = useState(false); // State for image removal
   const router = useRouter();
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -55,6 +58,16 @@ const MenuShowPage = ({ params }) => {
 
     fetchMenu();
   }, [menuId]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!newProduct.name) newErrors.name = "Product name is required.";
+    if (!newProduct.price || isNaN(newProduct.price)) newErrors.price = "Valid product price is required.";
+    if (selectedImage && !croppedImage) newErrors.image = "Please crop the uploaded image.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
 
   const handleAddCategory = async () => {
     try {
@@ -128,6 +141,7 @@ const MenuShowPage = ({ params }) => {
   };
 
   const handleAddOrEditProduct = async () => {
+    if (!validateForm()) return;
     const url = currentProductId ? `/api/products/${currentProductId}` : `/api/categories/${currentCategoryId}/products`;
     const method = currentProductId ? 'PUT' : 'POST';
 
@@ -349,7 +363,13 @@ const MenuShowPage = ({ params }) => {
   const handleCropComplete = (croppedImg) => {
     setCroppedImage(croppedImg);
     setSelectedImage(null);
+    setErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+      delete newErrors.image;
+      return newErrors;
+    });
   };
+
 
   const removeCroppedImage = () => {
     setCroppedImage(null);
@@ -541,6 +561,8 @@ const MenuShowPage = ({ params }) => {
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
                   style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+
                 <Label htmlFor="productPrice" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
                   Product Price
                 </Label>
@@ -551,16 +573,8 @@ const MenuShowPage = ({ params }) => {
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
                   style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
-                <Label htmlFor="productDescription" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
-                  Product Description
-                </Label>
-                <Input
-                  id="productDescription"
-                  value={newProduct.description}
-                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
-                  style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
-                />
+                {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
+
                 <Label htmlFor="productImage" className="block text-sm font-medium mt-4" style={{ color: '#333333' }}>
                   Product Image
                 </Label>
@@ -572,6 +586,8 @@ const MenuShowPage = ({ params }) => {
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-brandOrange"
                   style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                 />
+                {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image}</p>}
+
                 {selectedImage && (
                   <ImageCropper
                     imageSrc={selectedImage}
@@ -601,6 +617,7 @@ const MenuShowPage = ({ params }) => {
                   {isSubmitting ? <Spinner /> : editMode ? 'Update Product' : 'Add Product'}
                 </Button>
               </div>
+
             </DialogContent>
           </Dialog>
         </>

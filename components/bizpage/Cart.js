@@ -1,7 +1,6 @@
-// Cart.js
 import { useState } from 'react';
 import { useCart } from '@/context/cartContext';
-import { FaTrash, FaTimes } from 'react-icons/fa';
+import { FaTrash, FaTimes, FaMinus, FaPlus } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 
 const Cart = ({ isOpen, onClose }) => {
@@ -23,12 +22,12 @@ const Cart = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-end">
-      <div className="bg-white dark:bg-gray-900 p-4 shadow-lg text-black dark:text-white rounded-t-lg max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl">Your Cart</h2>
+      <div className="bg-brandWhite dark:bg-brandBlack p-4 shadow-lg text-brandBlack dark:text-brandWhite rounded-t-lg max-w-md w-full">
+        <div className="flex justify-between items-center  mb-4">
+          <h2 className="text-xl ">Your Cart</h2>
           <FaTimes className="cursor-pointer text-2xl" onClick={onClose} />
         </div>
-        <div className="mb-4 p-4 bg-blue-100 dark:bg-blue-900 text-black dark:text-white rounded-md">
+        <div className="mb-4 p-4 bg-lightBrandOrange dark:bg-brandOrange text-brandBlack dark:text-brandWhite rounded-md">
           <p className="text-sm">Here you can see your selected items. Use this to help you in the ordering process.</p>
         </div>
         {cart.length === 0 ? (
@@ -42,9 +41,27 @@ const Cart = ({ isOpen, onClose }) => {
                   <p className="text-sm">{item.price} Rf x {item.quantity}</p>
                 </div>
                 <div className="flex items-center">
-                  <Button variant="ghost" className="p-1" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</Button>
+                  <Button
+                    variant="ghost"
+                    className="p-1 "
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateQuantity(item.id, item.quantity - 1);
+                    }}
+                  >
+                    <FaMinus />
+                  </Button>
                   <span className="mx-2">{item.quantity}</span>
-                  <Button variant="ghost" className="p-1" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
+                  <Button
+                    variant="ghost"
+                    className="p-1 "
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateQuantity(item.id, item.quantity + 1);
+                    }}
+                  >
+                    <FaPlus />
+                  </Button>
                   <FaTrash onClick={() => removeFromCart(item.id)} className="ml-4 cursor-pointer text-red-600" />
                 </div>
               </div>
