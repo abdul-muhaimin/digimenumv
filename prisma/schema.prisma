@@ -40,6 +40,7 @@ model Menu {
   user      User       @relation(fields: [userId], references: [id])
   categories Category[]
   position  Int
+  products  Product[]  // Add this line to establish the relationship with Product
 }
 
 model Category {
@@ -56,8 +57,10 @@ model Product {
   name              String
   price             Float
   description       String?
-  categoryId        Int
-  category          Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId        Int?
+  category          Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  menuId            Int?    // New field to reference Menu
+  menu              Menu?   @relation(fields: [menuId], references: [id], onDelete: Cascade)
   position          Int
   imageUrl          String?
   active            Int     @default(1)  // 1 for true, 0 for false

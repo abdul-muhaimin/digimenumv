@@ -190,6 +190,9 @@ const ProductsPage = () => {
       {
         Header: 'Category',
         accessor: 'category.name',
+        Cell: ({ row: { original } }) => (
+          original.category ? original.category.name : 'No Category'
+        ),
       },
       {
         Header: () => (
@@ -293,7 +296,7 @@ const ProductsPage = () => {
 
   return (
     <div className="container mx-auto p-4 min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-      <div className=" text center mb-4">
+      <div className="text-center mb-4">
         <h1 className="text-2xl font-bold text-center" style={{ color: '#333333' }}>Manage Products</h1>
       </div>
       <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
@@ -368,7 +371,7 @@ const ProductsPage = () => {
               <label className="block mb-2" style={{ color: '#333333' }}>Category</label>
               <Input
                 type="text"
-                value={editProduct.category.name}
+                value={editProduct.category?.name || 'No Category'}
                 readOnly
                 className="bg-gray-200 cursor-not-allowed"
                 style={{ backgroundColor: '#F5F5F5', color: '#333333' }}

@@ -26,8 +26,15 @@ export async function GET(req, { params }) {
       },
     });
 
+    const productsWithoutCategory = await prisma.product.findMany({
+      where: {
+        menuId: parseInt(menuId),
+        categoryId: null,
+      },
+    });
+
     if (menu) {
-      return new Response(JSON.stringify(menu), {
+      return new Response(JSON.stringify({ ...menu, productsWithoutCategory }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });

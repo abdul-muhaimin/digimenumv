@@ -112,13 +112,15 @@ const PublicUserPage = () => {
 
   const getCategories = () => {
     if (searchResults.length > 0) {
-      return [{ name: 'Search Results', products: searchResults }];
+      return { categories: [{ name: 'Search Results', products: searchResults }], nonCategorizedProducts: [] };
     }
     if (userData) {
       const selectedMenu = userData.menus.find((menu) => menu.id === selectedMenuId);
-      return selectedMenu ? selectedMenu.categories : [];
+      const categories = selectedMenu ? selectedMenu.categories : [];
+      const nonCategorizedProducts = selectedMenu ? selectedMenu.products : [];
+      return { categories, nonCategorizedProducts };
     }
-    return [];
+    return { categories: [], nonCategorizedProducts: [] };
   };
 
   return (
@@ -129,7 +131,7 @@ const PublicUserPage = () => {
         <div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
           <MenuTabs menus={userData.menus} selectedMenuId={selectedMenuId} setSelectedMenuId={handleMenuTabClick} />
           <CategoryBar
-            categories={getCategories()}
+            categories={getCategories().categories}
             categoryRefs={categoryRefs}
             showCategories={showCategories}
             setShowCategories={setShowCategories}
@@ -142,7 +144,8 @@ const PublicUserPage = () => {
         </div>
         <ProductList
           view={view}
-          categories={getCategories()}
+          categories={getCategories().categories}
+          nonCategorizedProducts={getCategories().nonCategorizedProducts}
           handleCardClick={handleCardClick}
           getProductQuantity={getProductQuantity}
           addToCart={addToCart}

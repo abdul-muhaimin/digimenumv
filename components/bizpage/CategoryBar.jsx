@@ -45,7 +45,7 @@ const CategoryBar = ({
           <div className="flex flex-wrap justify-center space-x-4 px-4 py-2">
             {categories.map((category, index) => (
               <Button
-                key={category.id}
+                key={index}
                 onClick={() =>
                   categoryRefs.current[index]?.scrollIntoView({
                     behavior: "smooth",
