@@ -52,6 +52,7 @@ const UserDetails = () => {
         setValue('links.facebook', data.links?.facebook || 'Not available');
         setValue('links.whatsapp', data.links?.whatsapp || 'Not available');
         setValue('links.twitter', data.links?.twitter || 'Not available');
+        setValue('url', data.url || ''); // Set the new field
         setIsLoading(false);
       } catch (error) {
         toast.error('Failed to fetch user data');
@@ -227,6 +228,10 @@ const UserDetails = () => {
               <Label htmlFor="storeDescription" className="text-brandBlack">Store Description</Label>
               <Input id="storeDescription" {...register('storeDescription')} className="border-brandOrange focus:ring-brandOrange" style={{ backgroundColor: '#FFFFFF', color: '#333333' }} />
             </div>
+            <div>
+              <Label htmlFor="url" className="text-brandBlack">Business URL</Label>
+              <Input id="url" {...register('url')} className="border-brandOrange focus:ring-brandOrange" style={{ backgroundColor: '#FFFFFF', color: '#333333' }} disabled />
+            </div>
           </div>
 
           <div className="mb-4">
@@ -251,7 +256,7 @@ const UserDetails = () => {
                 {selectedAvatar && isAvatarCropping && (
                   <ImageCropper
                     imageSrc={selectedAvatar}
-                    aspectRatio={1.7}
+                    aspectRatio={1}
                     onCropComplete={handleCropComplete(setCroppedAvatar, setIsAvatarCropping)}
                   />
                 )}
@@ -293,7 +298,7 @@ const UserDetails = () => {
                 {selectedBanner && isBannerCropping && (
                   <ImageCropper
                     imageSrc={selectedBanner}
-                    aspectRatio={1.8}
+                    aspectRatio={2}
                     onCropComplete={handleCropComplete(setCroppedBanner, setIsBannerCropping)}
                   />
                 )}

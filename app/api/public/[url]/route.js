@@ -1,13 +1,14 @@
+// /Users/abdul/new1/my-nextjs-app/app/api/public/[url]/route.js
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
-  const { businessName } = params;
+  const { url } = params;
 
   try {
     const user = await prisma.user.findFirst({
-      where: { businessName },
+      where: { url },
       select: {
         id: true,
         clerkId: true,

@@ -19,10 +19,11 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true); // Add loading state
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [additionalData, setAdditionalData] = useState(null);
+  const isUpsertComplete = useUpsertUser(isLoaded, isSignedIn, user, additionalData);
 
   useEffect(() => {
     const checkUserOnboarding = async () => {
-      if (isLoaded && isSignedIn && user) {
+      if (isLoaded && isSignedIn && user && isUpsertComplete) {
         try {
           const response = await fetch(`/api/users/${user.id}/check-onboarding`);
           const data = await response.json();
@@ -36,9 +37,7 @@ const DashboardPage = () => {
     };
 
     checkUserOnboarding();
-  }, [isLoaded, isSignedIn, user]);
-
-  useUpsertUser(isLoaded, isSignedIn, user, additionalData);
+  }, [isLoaded, isSignedIn, user, isUpsertComplete]);
 
   const handleOnboardingComplete = (data) => {
     setAdditionalData(data);

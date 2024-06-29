@@ -30,6 +30,7 @@ model User {
   storeDescription  String?
   menus             Menu[]
   urlVisits         URLVisit[]
+  url               String?   // New URL field
 }
 
 model Menu {

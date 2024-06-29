@@ -1,4 +1,3 @@
-// pages/api/user/[id]/submit-onboarding.js
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
 
@@ -34,7 +33,7 @@ export async function POST(req, { params }) {
     });
   }
 
-  const { name, businessName, businessType, businessAddress, businessIsland, businessAtoll, businessTelephone } = data;
+  const { name, businessName, businessType, businessAddress, businessIsland, businessAtoll, businessTelephone, url } = data;
 
   try {
     const updatedUser = await prisma.user.update({
@@ -47,6 +46,7 @@ export async function POST(req, { params }) {
         businessIsland,
         businessAtoll,
         businessTelephone,
+        url, // Ensure URL is updated here
       },
     });
 

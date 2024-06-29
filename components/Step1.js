@@ -6,16 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 const Step1 = ({ nextStep }) => {
-  const { register, handleSubmit, formState: { errors } } = useFormContext();
-  const [businessUrl, setBusinessUrl] = useState('');
+  const { register, handleSubmit, formState: { errors }, setValue } = useFormContext();
+  const [url, setUrl] = useState('');
 
   const onSubmit = (data) => {
     nextStep();
   };
 
-  const handleBusinessNameChange = (event) => {
+  const handleUrlChange = (event) => {
     const value = event.target.value.toLowerCase().replace(/\s+/g, '');
-    setBusinessUrl(value);
+    setUrl(value);
+    setValue('url', value); // Update the form value for url
   };
 
   return (
@@ -25,25 +26,23 @@ const Step1 = ({ nextStep }) => {
       </div>
       <h1 className="heading">Let's get started</h1>
       <div className="form-group">
-        <Label htmlFor="businessUrl">Business URL:</Label>
+        <Label htmlFor="url">Business URL:</Label>
         <Input
-          id="businessUrl"
-          {...register('businessName', {
+          id="url"
+          {...register('url', {
             required: 'Business URL is required',
             pattern: {
               value: /^[a-z0-9]+$/,
               message: 'No spaces or capital letters allowed',
             },
-            onChange: handleBusinessNameChange,
+            onChange: handleUrlChange,
           })}
         />
-        {errors.businessName && <div className="error">{errors.businessName.message}</div>}
+        {errors.url && <div className="error">{errors.url.message}</div>}
         <small className="muted-text">This URL cannot be changed later.</small>
         <small className="muted-text" style={{ display: 'block' }}>
-          <span className="highlight">digimenu.mv/{businessUrl}</span>
+          <span className="highlight">digimenu.mv/{url}</span>
         </small>
-
-
       </div>
       <Button type="submit" className="button">Next</Button>
 
@@ -72,7 +71,6 @@ const Step1 = ({ nextStep }) => {
           margin-top: 0.5rem;
         }
         .highlight {
-          // font-weight: bold;
           color: #FF8400;
         }
         .svg-placeholder {
@@ -84,7 +82,7 @@ const Step1 = ({ nextStep }) => {
         .onboarding-image {
           max-width: 100%;
           height: auto;
-          max-height: 300px; /* Adjust as needed for better fit */
+          max-height: 300px;
         }
         .button {
           background-color: #FF8400;

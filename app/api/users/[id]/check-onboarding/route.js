@@ -27,11 +27,12 @@ export async function GET(req, { params }) {
       where: { clerkId: id },
       select: {
         businessType: true,
+        url: true,
       },
     });
 
     if (user) {
-      const onboardingIncomplete = !user.businessType;
+      const onboardingIncomplete = !user.businessType || !user.url || user.url.trim() === "";
       return new Response(JSON.stringify({ onboardingIncomplete }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },

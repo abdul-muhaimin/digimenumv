@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 
 const validationSchema = [
   Yup.object({
-    businessName: Yup.string().required('Business Name is required'),
+    url: Yup.string().required('Business URL is required'),
   }),
   Yup.object({
     name: Yup.string().required('Name is required'),
@@ -29,7 +29,7 @@ const OnboardingModal = ({ isOpen, onClose, user, onComplete }) => {
 
   const methods = useForm({
     resolver: yupResolver(validationSchema[currentStep]),
-    defaultValues: { businessName: '', name: '', businessType: '', businessTelephone: '' },
+    defaultValues: { url: '', name: '', businessType: '', businessTelephone: '' },
     mode: 'onChange',
   });
 

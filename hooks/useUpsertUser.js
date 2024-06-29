@@ -1,13 +1,13 @@
-// hooks/useUpsertUser.js
+// useUpsertUser.js
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export const useUpsertUser = (isLoaded, isSignedIn, user, additionalData) => {
-  const [isCalled, setIsCalled] = useState(false);
+  const [isUpsertComplete, setIsUpsertComplete] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user || isCalled) {
+    if (!isLoaded || !isSignedIn || !user) {
       return;
     }
 
@@ -22,7 +22,7 @@ export const useUpsertUser = (isLoaded, isSignedIn, user, additionalData) => {
         });
 
         if (response.ok) {
-          setIsCalled(true); // Set flag to true after successful API call
+          setIsUpsertComplete(true); // Set flag to true after successful API call
         } else {
           console.error('API call failed', await response.text());
         }
@@ -32,5 +32,7 @@ export const useUpsertUser = (isLoaded, isSignedIn, user, additionalData) => {
     };
 
     upsertUser();
-  }, [isLoaded, isSignedIn, user, isCalled, additionalData]);
+  }, [isLoaded, isSignedIn, user, additionalData]);
+
+  return isUpsertComplete;
 };

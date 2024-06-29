@@ -15,7 +15,7 @@ import SearchBar from '@/components/bizpage/SearchBar';
 import SplashLoading from '@/components/bizpage/SplashLoading';
 
 const PublicUserPage = () => {
-  const { businessName } = useParams();
+  const { url } = useParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,12 +29,12 @@ const PublicUserPage = () => {
   const { cart, addToCart, removeFromCart, updateQuantity, getProductQuantity } = useCart();
 
   useEffect(() => {
-    if (!businessName) return;
+    if (!url) return;
 
     const fetchUserData = async () => {
       try {
         console.log('Fetching user data...');
-        const response = await fetch(`/api/public/${businessName}`);
+        const response = await fetch(`/api/public/${url}`);
         if (!response.ok) throw new Error('Error fetching user data');
         const data = await response.json();
         setUserData(data);
@@ -56,7 +56,7 @@ const PublicUserPage = () => {
     };
 
     fetchUserData();
-  }, [businessName]);
+  }, [url]);
 
   const handleSearch = (searchTerm) => {
     if (!userData) return;

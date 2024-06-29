@@ -34,6 +34,7 @@ export async function GET(req) {
         location: true,
         links: true,
         storeDescription: true,
+        url: true, // Added the new field here
       },
     });
 
@@ -80,8 +81,8 @@ export async function PUT(req) {
   const {
     name, email, mobile,
     businessName, businessType, businessAddress,
-    businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription
-  } = data;
+    businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription, url
+  } = data; // Added `url` here
 
   try {
     const updatedUser = await prisma.user.update({
@@ -89,7 +90,7 @@ export async function PUT(req) {
       data: {
         name, email, mobile,
         businessName, businessType, businessAddress,
-        businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription
+        businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription, url
       },
     });
 
