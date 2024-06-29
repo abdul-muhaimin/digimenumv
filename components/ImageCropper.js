@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import getCroppedImg from '@/utils/cropImage'; // Utility function for processing the cropped image
 
-const ImageCropper = ({ imageSrc, onCropComplete, aspectRatio = 1 }) => {
+const ImageCropper = ({ imageSrc, onCropComplete, aspectRatio = 2 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -22,7 +22,7 @@ const ImageCropper = ({ imageSrc, onCropComplete, aspectRatio = 1 }) => {
   }, [imageSrc, croppedAreaPixels, onCropComplete]);
 
   return (
-    <div className="relative w-full h-64 bg-gray-200">
+    <div className="relative w-full max-w-lg h-64 bg-gray-200">
       <Cropper
         image={imageSrc}
         crop={crop}

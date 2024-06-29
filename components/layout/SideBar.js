@@ -1,10 +1,8 @@
 "use client"
 import { useState, useEffect, useRef } from 'react';
-import { FaBars, FaHome, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaHome, FaUser, FaCog } from 'react-icons/fa';
 import Link from 'next/link';
 import { useClerk, UserButton } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +37,12 @@ const Sidebar = () => {
     fetchUserData();
   }, []);
 
+  const handleLinkClick = () => {
+    if (isOpen) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <>
       {/* Toggle button for sidebar */}
@@ -65,25 +69,25 @@ const Sidebar = () => {
           </div>
           <ul className="space-y-2 font-medium">
             <li>
-              <Link href="/dashboard" className="flex items-center p-2 text-brandBlack rounded-lg">
+              <Link href="/dashboard" className="flex items-center p-2 text-brandBlack rounded-lg" onClick={handleLinkClick}>
                 <FaHome className="w-5 h-5 text-brandOrange transition duration-75" />
                 <span className="ml-3">Dashboard</span>
               </Link>
             </li>
             <li>
-              <Link href="/profile" className="flex items-center p-2 text-brandBlack rounded-lg">
+              <Link href="/profile" className="flex items-center p-2 text-brandBlack rounded-lg" onClick={handleLinkClick}>
                 <FaUser className="w-5 h-5 text-brandOrange transition duration-75" />
                 <span className="ml-3">Store Profile</span>
               </Link>
             </li>
             <li>
-              <Link href="/my-qr" className="flex items-center p-2 text-brandBlack rounded-lg">
+              <Link href="/my-qr" className="flex items-center p-2 text-brandBlack rounded-lg" onClick={handleLinkClick}>
                 <FaCog className="w-5 h-5 text-brandOrange transition duration-75" />
                 <span className="ml-3">Menu Settings</span>
               </Link>
             </li>
             <li>
-              <Link href="/my-products" className="flex items-center p-2 text-brandBlack rounded-lg">
+              <Link href="/my-products" className="flex items-center p-2 text-brandBlack rounded-lg" onClick={handleLinkClick}>
                 <FaCog className="w-5 h-5 text-brandOrange transition duration-75" />
                 <span className="ml-3">Products Settings</span>
               </Link>

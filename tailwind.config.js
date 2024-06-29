@@ -41,6 +41,7 @@ module.exports = {
         brandBlack: '#333333',
         brandOrange: '#FF8400',
         lightBrandOrange: '#FFB84D',
+        brandLightOrange: 'rgba(255, 184, 77, 0.28)',
         brandGray: '#CCCCCC',
         brandDarkGray: '#777777',
 

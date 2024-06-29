@@ -8,7 +8,7 @@ const PricingSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <div className="bg-lightBrandOrange p-4 rounded-t-lg">
-              <h3 className="text-xl font-bold text-brandBlack mb-2">TRIAL - 14 days</h3>
+              <h3 className="text-xl font-bold text-brandBlack mb-2"> 30 Days Trial</h3>
             </div>
             <p className="text-gray-600 mb-4">For businesses just getting started with mobile menus</p>
             <div className="text-3xl font-bold text-brandBlack mb-4">00 Mrf</div>
@@ -31,7 +31,7 @@ const PricingSection = () => {
           </div>
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <div className="bg-lightBrandOrange p-4 rounded-t-lg">
-              <h3 className="text-xl font-bold text-brandBlack mb-2">MEMBERS</h3>
+              <h3 className="text-xl font-bold text-brandBlack mb-2">Members</h3>
             </div>
             <p className="text-gray-600 mb-4">For businesses just getting started with mobile menus</p>
             <div className="text-3xl font-bold text-brandBlack mb-4">250 Mrf/ Month</div>

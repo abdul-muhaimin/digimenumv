@@ -180,7 +180,7 @@ const UserDetails = () => {
   return (
     <div className="" style={{ backgroundColor: '#FFFFFF' }}>
       <div className=" p-4 rounded-md shadow-lg" style={{ backgroundColor: '#F5F5F5' }}>
-        <h2 className="text-2xl font-bold mb-4" style={{ color: '#333333' }}>User Details</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center" style={{ color: '#333333' }}>User Details</h2>
         <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -251,7 +251,7 @@ const UserDetails = () => {
                 {selectedAvatar && isAvatarCropping && (
                   <ImageCropper
                     imageSrc={selectedAvatar}
-                    aspectRatio={1}
+                    aspectRatio={1.7}
                     onCropComplete={handleCropComplete(setCroppedAvatar, setIsAvatarCropping)}
                   />
                 )}
@@ -293,7 +293,7 @@ const UserDetails = () => {
                 {selectedBanner && isBannerCropping && (
                   <ImageCropper
                     imageSrc={selectedBanner}
-                    aspectRatio={2}
+                    aspectRatio={1.8}
                     onCropComplete={handleCropComplete(setCroppedBanner, setIsBannerCropping)}
                   />
                 )}

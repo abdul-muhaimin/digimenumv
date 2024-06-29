@@ -161,7 +161,7 @@ const PublicUserPage = () => {
       <footer className="mt-8 text-center py-4">
         <hr className="border-gray-300 dark:border-gray-700 my-4" />
         <p className="text-gray-500 dark:text-gray-400">
-          Powered by <a href="/" className="text-brandOrange">digimenu.mv</a> &reg;
+          Powered by <a href="/" className="text-brandOrange">digimenu.mv</a>
         </p>
       </footer>
     </div>

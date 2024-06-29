@@ -248,8 +248,10 @@ const MenuShowPage = ({ params }) => {
   const handleRemoveImage = async () => {
     try {
       setIsImageRemoving(true);
-      const response = await fetch(`/api/products/${currentProductId}/image`, {
+      const response = await fetch(`/api/products/${currentProductId}/clear-image`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicId: newProduct.imageUrl.split('/').pop().split('.')[0] }), // Extract publicId from imageUrl
       });
 
       if (response.ok) {
@@ -267,6 +269,8 @@ const MenuShowPage = ({ params }) => {
       setIsImageRemoving(false);
     }
   };
+
+
 
   const handleBack = () => {
     router.back();
@@ -592,6 +596,7 @@ const MenuShowPage = ({ params }) => {
                   <ImageCropper
                     imageSrc={selectedImage}
                     onCropComplete={handleCropComplete}
+                    aspectRatio={1.5}
                   />
                 )}
                 {croppedImage && (

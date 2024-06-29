@@ -20,7 +20,7 @@ const HeroSection = () => {
           </h1>
           <div className="mt-6">
             <button className="bg-brandOrange text-white  py-2 px-4 rounded ml-4" >
-              Sign up and start 14 days trial!
+              Sign up and start 30 days trial
             </button>
           </div>
         </div>
