@@ -269,11 +269,11 @@ const QRPage = () => {
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="mt-1 block w-full border-brandOrange focus:ring-brandOrange"
+                      className="border-brandOrange focus:ring-brandOrange"
                       style={{ backgroundColor: '#FFFFFF', color: '#333333' }}
                     />
                   </div>
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 m-2 flex justify-end">
                     <Button onClick={handleSave} disabled={isSubmitting} style={{ backgroundColor: '#FF8400', color: '#FFFFFF' }}>
                       {isSubmitting ? <Spinner /> : currentMenu ? "Save" : "Create"}
                     </Button>
