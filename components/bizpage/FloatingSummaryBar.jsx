@@ -31,15 +31,28 @@ const FloatingSummaryBar = () => {
   return (
     <>
       <div
-        className="fixed bottom-16 right-4 bg-lightBrandOrange dark:bg-brandOrange text-brandBlack dark:text-brandWhite p-4 shadow-lg rounded-full flex items-center cursor-pointer"
+        className="fixed bottom-0 left-0 right-0 bg-lightBrandOrange dark:bg-brandOrange text-brandBlack dark:text-brandWhite p-4 shadow-lg flex justify-between items-center cursor-pointer"
         onClick={() => setOpen(true)}
       >
-        <FaShoppingCart className="mr-2" />
+        <div className="flex items-center">
+          <FaShoppingCart className="mr-2" />
+          <div>
+            <p>
+              {totalItems} {totalItems === 1 ? "item" : "items"}
+            </p>
+            <p>{totalWithGST.toFixed(2)} Rf</p>
+          </div>
+        </div>
         <div>
-          <p>
-            {totalItems} {totalItems === 1 ? "item" : "items"}
-          </p>
-          <p>{totalWithGST.toFixed(2)} Rf</p>
+          <button
+            className="bg-brandBlack dark:bg-brandWhite text-white dark:text-black px-4 py-2 rounded"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(true);
+            }}
+          >
+            View Selection
+          </button>
         </div>
       </div>
 
