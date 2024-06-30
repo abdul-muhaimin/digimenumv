@@ -24,7 +24,6 @@ const OnboardingModal = ({ isOpen, onClose, user, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [qrCodeUrl, setQrCodeUrl] = useState(null);
   const router = useRouter();
 
   const methods = useForm({
@@ -51,8 +50,6 @@ const OnboardingModal = ({ isOpen, onClose, user, onComplete }) => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        setQrCodeUrl(result.qrCodeUrl);
         toast.success('Onboarding completed successfully!', {
           position: 'top-right',
           autoClose: 3000,
@@ -107,7 +104,7 @@ const OnboardingModal = ({ isOpen, onClose, user, onComplete }) => {
             </>
           ) : (
             <div className="success-message">
-              <img src={qrCodeUrl} alt="QR Code" className="qr-code-image" />
+              <img src="/success-image.svg" alt="Success" className="success-image" />
               <h1>Onboarding Completed!</h1>
               <p>Your onboarding is completed successfully. You can now create your menu.</p>
               <Button onClick={handleCreateMenuClick} className="button">Create Menu</Button>
@@ -122,8 +119,8 @@ const OnboardingModal = ({ isOpen, onClose, user, onComplete }) => {
         .success-message {
           text-align: center;
         }
-        .qr-code-image {
-          width: 150px;
+        .success-image {
+          width: 100px;
           margin-bottom: 20px;
         }
         .button {

@@ -1,6 +1,8 @@
+// /app/api/users/[id]/submit-onboarding/route.js
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
-import QRCode from 'qrcode';
+import { generateQrCode } from '@/utils/generateQrCode';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -36,11 +38,12 @@ export async function POST(req, { params }) {
 
   const { name, businessName, businessType, businessAddress, businessIsland, businessAtoll, businessTelephone, url } = data;
 
-  try {
-    // Generate QR code
-    const qrCodeUrl = await QRCode.toDataURL(`https://digimenumv.vercel.app/${url}`);
+  const qrCodeLink = `https://digimenumv.vercel.app/${url}`;
+  const templatePath = path.join(process.cwd(), 'public', 'sticker.png');
 
-    // Update the user with the provided data and the QR code URL
+  try {
+    const qrCodeUrl = await generateQrCode(qrCodeLink, templatePath);
+
     const updatedUser = await prisma.user.update({
       where: { clerkId: userId },
       data: {
@@ -52,7 +55,7 @@ export async function POST(req, { params }) {
         businessAtoll,
         businessTelephone,
         url,
-        qrCodeUrl, // Save the generated QR code URL
+        qrCodeUrl, // Save the Cloudinary URL
       },
     });
 

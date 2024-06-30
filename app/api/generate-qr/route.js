@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
-import QRCode from 'qrcode';
+import { generateQrCode } from '@/utils/generateQrCode';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
-export async function POST(req) {
+export async function POST(req, { params }) {
   const { userId } = auth(req);
 
   if (!userId) {
@@ -14,24 +15,56 @@ export async function POST(req) {
     });
   }
 
-  const { userUrl } = await req.json();
-  const fullUrl = `http://localhost:3000/${userUrl}`;
+  const { id } = params;
+
+  if (userId !== id) {
+    return new Response(JSON.stringify({ message: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  let data;
 
   try {
-    const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
+    data = await req.json();
+  } catch (error) {
+    return new Response(JSON.stringify({ message: 'Invalid request body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
-    // Save QR code URL to the database
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { qrCodeUrl: qrCodeDataUrl },
+  const { name, businessName, businessType, businessAddress, businessIsland, businessAtoll, businessTelephone, url } = data;
+
+  const qrCodeUrlPath = `/qrcodes/${url}.png`;
+  const qrCodeFullPath = path.join(process.cwd(), 'public', qrCodeUrlPath);
+  const qrCodeLink = `http://localhost:3000/${url}`;
+
+  try {
+    await generateQrCode(qrCodeLink, path.join(process.cwd(), 'public', 'sticker.png'), qrCodeFullPath);
+
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: userId },
+      data: {
+        name,
+        businessName,
+        businessType,
+        businessAddress,
+        businessIsland,
+        businessAtoll,
+        businessTelephone,
+        url,
+        qrCodeUrl: qrCodeUrlPath,
+      },
     });
 
-    return new Response(JSON.stringify({ qrCodeDataUrl }), {
+    return new Response(JSON.stringify(updatedUser), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error('Error updating user:', error);
     return new Response(JSON.stringify({ message: 'Internal server error', details: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

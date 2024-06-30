@@ -7,9 +7,7 @@ const Modal = ({ isOpen, onClose, children }) => {
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          &times;
-        </button>
+        <button className="modal-close" onClick={onClose}>Close</button>
         {children}
       </div>
       <style jsx>{`
@@ -28,22 +26,24 @@ const Modal = ({ isOpen, onClose, children }) => {
         .modal-content {
           background: #fff;
           padding: 20px;
-          border-radius: 4px;
-          position: relative;
-          min-width: 300px;
+          border-radius: 5px;
+          max-width: 500px;
+          width: 100%;
         }
         .modal-close {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: none;
+          background: #FF8400;
+          color: #fff;
           border: none;
-          font-size: 1.5rem;
+          padding: 10px;
+          border-radius: 5px;
           cursor: pointer;
+        }
+        .modal-close:hover {
+          background: #FFB84D;
         }
       `}</style>
     </div>,
-    document.getElementById('__next')
+    document.body
   );
 };
 
