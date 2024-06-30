@@ -1,13 +1,11 @@
 import React from 'react';
-import { createPortal } from 'react-dom';
 
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
-  return createPortal(
+  return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>Close</button>
         {children}
       </div>
       <style jsx>{`
@@ -21,29 +19,16 @@ const Modal = ({ isOpen, onClose, children }) => {
           display: flex;
           justify-content: center;
           align-items: center;
-          z-index: 1000;
         }
         .modal-content {
-          background: #fff;
+          background: white;
           padding: 20px;
-          border-radius: 5px;
+          border-radius: 8px;
           max-width: 500px;
           width: 100%;
         }
-        .modal-close {
-          background: #FF8400;
-          color: #fff;
-          border: none;
-          padding: 10px;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-        .modal-close:hover {
-          background: #FFB84D;
-        }
       `}</style>
-    </div>,
-    document.body
+    </div>
   );
 };
 
