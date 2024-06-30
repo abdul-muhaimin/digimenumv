@@ -1,23 +1,25 @@
-'use client'
+"use client"
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Button } from '@/components/ui/button';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
-import Spinner from '@/components/ui/Spinner'; // Import the Spinner component
+import Spinner from '@/components/ui/Spinner';
 import { useUser } from '@clerk/nextjs';
 import { useUpsertUser } from '@/hooks/useUpsertUser';
 import OnboardingModal from '@/components/OnboardingModal';
+import QrCodeModal from '@/components/QrCodeModal';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
 const DashboardPage = () => {
-  const { isLoaded, isSignedIn, user } = useUser(); // Use Clerk's useUser hook to get authentication status
+  const { isLoaded, isSignedIn, user } = useUser();
   const [dashboardData, setDashboardData] = useState(null);
   const [timeFrame, setTimeFrame] = useState('daily');
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showQrCodeModal, setShowQrCodeModal] = useState(false);
   const [additionalData, setAdditionalData] = useState(null);
   const isUpsertComplete = useUpsertUser(isLoaded, isSignedIn, user, additionalData);
 
@@ -46,7 +48,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      setLoading(true); // Set loading to true before fetching data
+      setLoading(true);
       try {
         const response = await fetch(`/api/dashboard?timeFrame=${timeFrame}`);
         if (!response.ok) throw new Error('Network response was not ok');
@@ -56,7 +58,7 @@ const DashboardPage = () => {
         console.error('Error fetching dashboard data:', error);
         toast.error('Failed to fetch dashboard data');
       } finally {
-        setLoading(false); // Set loading to false after fetching data
+        setLoading(false);
       }
     };
 
@@ -71,7 +73,7 @@ const DashboardPage = () => {
 
   const aggregateVisits = (visits) => {
     const intervals = [];
-    const intervalDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const intervalDuration = 30 * 60 * 1000;
 
     visits.forEach((visit) => {
       const visitTime = new Date(visit.timestamp).getTime();
@@ -101,8 +103,8 @@ const DashboardPage = () => {
         {
           label: 'Visits',
           data,
-          backgroundColor: 'rgba(255, 132, 0, 0.6)', // lightBrandOrange with opacity
-          borderColor: 'rgba(255, 132, 0, 1)', // brandOrange
+          backgroundColor: 'rgba(255, 132, 0, 0.6)',
+          borderColor: 'rgba(255, 132, 0, 1)',
           borderWidth: 1,
           fill: false,
         },
@@ -197,12 +199,22 @@ const DashboardPage = () => {
               <div className="flex-grow">
                 <Line data={getChartData()} options={chartOptions} />
               </div>
+              <div className="mt-4 flex justify-center">
+                <Button onClick={() => setShowQrCodeModal(true)} className="bg-[#FF8400] text-[#FFFFFF]">
+                  Show QR Code
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
           <div style={{ color: '#333333' }}>Loading...</div>
         )
       )}
+      <QrCodeModal
+        isOpen={showQrCodeModal}
+        onClose={() => setShowQrCodeModal(false)}
+        qrCodeUrl={dashboardData?.qrCodeUrl}
+      />
     </div>
   );
 };

@@ -31,6 +31,7 @@ model User {
   menus             Menu[]
   urlVisits         URLVisit[]
   url               String?   // New URL field
+  qrCodeUrl         String?
 }
 
 model Menu {

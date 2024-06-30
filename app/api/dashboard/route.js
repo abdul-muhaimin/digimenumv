@@ -93,7 +93,12 @@ export async function GET(req) {
       },
     });
 
-    return new Response(JSON.stringify({ visits, todayVisitors, yesterdayVisitors, totalProducts, totalMenus, totalDiscounts, totalInactive }), {
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { qrCodeUrl: true },
+    });
+
+    return new Response(JSON.stringify({ visits, todayVisitors, yesterdayVisitors, totalProducts, totalMenus, totalDiscounts, totalInactive, qrCodeUrl: user.qrCodeUrl }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -230,7 +230,7 @@ const UserDetails = () => {
             </div>
             <div>
               <Label htmlFor="url" className="text-brandBlack">Business URL</Label>
-              <Input id="url" {...register('url')} className="border-brandOrange focus:ring-brandOrange" style={{ backgroundColor: '#FFFFFF', color: '#333333' }} disabled />
+              <Input id="url" {...register('url')} className="border-brandOrange focus:ring-brandOrange" style={{ backgroundColor: '#FFFFFF', color: '#333333' }} />
             </div>
           </div>
 
