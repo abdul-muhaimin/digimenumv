@@ -34,71 +34,81 @@ export async function GET(req) {
   }
 
   try {
-    const visits = await prisma.uRLVisit.findMany({
-      where: {
-        storeId: userId,
-        timestamp: {
-          gte: startDate,
-          lte: endDate,
+    // Perform database queries in parallel
+    const [
+      visits,
+      todayVisitors,
+      yesterdayVisitors,
+      totalProducts,
+      totalMenus,
+      totalDiscounts,
+      totalInactive,
+      user
+    ] = await Promise.all([
+      prisma.uRLVisit.findMany({
+        where: {
+          storeId: userId,
+          timestamp: {
+            gte: startDate,
+            lte: endDate,
+          },
         },
-      },
-      orderBy: { timestamp: 'asc' },
-    });
-
-    const todayStart = startOfDay(new Date());
-    const yesterdayStart = startOfDay(subDays(new Date(), 1));
-    const yesterdayEnd = endOfDay(subDays(new Date(), 1));
-
-    const todayVisitors = await prisma.uRLVisit.count({
-      where: {
-        storeId: userId,
-        timestamp: {
-          gte: todayStart,
+        orderBy: { timestamp: 'asc' },
+      }),
+      prisma.uRLVisit.count({
+        where: {
+          storeId: userId,
+          timestamp: {
+            gte: startOfDay(new Date()),
+          },
         },
-      },
-    });
-
-    const yesterdayVisitors = await prisma.uRLVisit.count({
-      where: {
-        storeId: userId,
-        timestamp: {
-          gte: yesterdayStart,
-          lte: yesterdayEnd,
+      }),
+      prisma.uRLVisit.count({
+        where: {
+          storeId: userId,
+          timestamp: {
+            gte: startOfDay(subDays(new Date(), 1)),
+            lte: endOfDay(subDays(new Date(), 1)),
+          },
         },
-      },
-    });
+      }),
+      prisma.product.count({
+        where: { category: { menu: { user: { clerkId: userId } } } },
+      }),
+      prisma.menu.count({
+        where: { user: { clerkId: userId } },
+      }),
+      prisma.product.count({
+        where: {
+          category: { menu: { user: { clerkId: userId } } },
+          OR: [
+            { discountPercentage: { not: null } },
+            { discountFixed: { not: null } },
+          ],
+        },
+      }),
+      prisma.product.count({
+        where: {
+          category: { menu: { user: { clerkId: userId } } },
+          active: 0,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { clerkId: userId },
+        select: { qrCodeUrl: true },
+      })
+    ]);
 
-    const totalProducts = await prisma.product.count({
-      where: { category: { menu: { user: { clerkId: userId } } } },
-    });
-
-    const totalMenus = await prisma.menu.count({
-      where: { user: { clerkId: userId } },
-    });
-
-    const totalDiscounts = await prisma.product.count({
-      where: {
-        category: { menu: { user: { clerkId: userId } } },
-        OR: [
-          { discountPercentage: { not: null } },
-          { discountFixed: { not: null } },
-        ],
-      },
-    });
-
-    const totalInactive = await prisma.product.count({
-      where: {
-        category: { menu: { user: { clerkId: userId } } },
-        active: 0,
-      },
-    });
-
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { qrCodeUrl: true },
-    });
-
-    return new Response(JSON.stringify({ visits, todayVisitors, yesterdayVisitors, totalProducts, totalMenus, totalDiscounts, totalInactive, qrCodeUrl: user.qrCodeUrl }), {
+    return new Response(JSON.stringify({
+      visits,
+      todayVisitors,
+      yesterdayVisitors,
+      totalProducts,
+      totalMenus,
+      totalDiscounts,
+      totalInactive,
+      qrCodeUrl: user.qrCodeUrl
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
