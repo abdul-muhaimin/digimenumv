@@ -52,6 +52,9 @@ export async function GET(req, { params }) {
   }
 }
 
+// PUT and DELETE handlers would be similarly defined here...
+
+
 export async function PUT(req, { params }) {
   const { userId } = auth(req);
   const { menuId } = params;

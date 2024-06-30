@@ -4,9 +4,9 @@ import { startOfDay, endOfDay, subDays, subWeeks, subMonths, startOfWeek, startO
 
 const prisma = new PrismaClient();
 
-export async function GET(req) {
+export async function GET(req, { params }) {
   const { userId } = auth(req);
-  const url = new URL(req.url);
+  const url = new URL(req.url, `http://${req.headers.host}`);
   const timeFrame = url.searchParams.get('timeFrame') || 'daily';
 
   if (!userId) {
@@ -34,7 +34,6 @@ export async function GET(req) {
   }
 
   try {
-    // Perform database queries in parallel
     const [
       visits,
       todayVisitors,

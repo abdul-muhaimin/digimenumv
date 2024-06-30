@@ -3,7 +3,6 @@ import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
-// Handle GET request to fetch all menus for the user
 export async function GET(req) {
   const { userId: clerkUserId } = auth(req);
 
@@ -51,12 +50,14 @@ export async function GET(req) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('Error fetching menus:', error);
     return new Response(JSON.stringify({ message: 'Internal server error', details: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 }
+
 
 // Handle POST request to create a new menu
 export async function POST(req) {

@@ -1,14 +1,17 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useTable, useSortBy, useGlobalFilter } from "react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
-import { FiMoreVertical, FiX, FiTrash2, FiEdit } from "react-icons/fi";
+import { FiTrash2, FiEdit } from "react-icons/fi";
 import 'react-toastify/dist/ReactToastify.css';
 import Switch from '@/components/Switch';
-import Spinner from '@/components/ui/Spinner'; // Import the Spinner component
+import Spinner from '@/components/ui/Spinner';
+import useSWR from 'swr';
+
+const fetcher = url => fetch(url).then(res => res.json());
 
 const GlobalFilter = ({ globalFilter, setGlobalFilter }) => {
   return (
@@ -43,31 +46,23 @@ const ProductsPage = () => {
   const [editProductId, setEditProductId] = useState(null);
   const [editProduct, setEditProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchProducts();
-    }
-  }, [user]);
+  // SWR Hook for fetching products
+  const { data, error, isLoading, mutate } = useSWR(
+    user ? `/api/products` : null,
+    fetcher,
+    {
+      onError: (error) => {
 
-  const fetchProducts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/products`);
-      if (response.ok) {
-        const data = await response.json();
+      },
+      onSuccess: (data) => {
+
         setProducts(data || []);
-      } else {
-        toast.error("Failed to fetch products");
       }
-    } catch (error) {
-      toast.error("An error occurred while fetching products");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  );
+
 
   const handleDeleteProduct = async (id) => {
     const confirmed = true; // Replace with actual modal confirmation logic
@@ -78,7 +73,7 @@ const ProductsPage = () => {
       const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (response.ok) {
         toast.success('Product deleted successfully');
-        setProducts((prev) => prev.filter((product) => product.id !== id));
+        mutate(); // Revalidate data
       } else {
         toast.error('Failed to delete product');
       }
@@ -98,11 +93,7 @@ const ProductsPage = () => {
       const response = await fetch(`/api/products/${id}/image`, { method: 'DELETE' });
       if (response.ok) {
         toast.success('Image removed successfully');
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.id === id ? { ...product, imageUrl: '' } : product
-          )
-        );
+        mutate(); // Revalidate data
       } else {
         toast.error('Failed to remove image');
       }
@@ -129,11 +120,7 @@ const ProductsPage = () => {
       });
       if (response.ok) {
         toast.success('Product updated successfully');
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.id === editProductId ? { ...editProduct } : product
-          )
-        );
+        mutate(); // Revalidate data
         setShowModal(false);
       } else {
         toast.error('Failed to update product');
@@ -170,9 +157,7 @@ const ProductsPage = () => {
         body: JSON.stringify(updatedProduct),
       });
       if (response.ok) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === product.id ? updatedProduct : p))
-        );
+        mutate(); // Revalidate data
       } else {
         toast.error('Failed to update product');
       }
@@ -271,7 +256,7 @@ const ProductsPage = () => {
   } = useTable(
     {
       columns,
-      data: products,
+      data: products || [],
     },
     useGlobalFilter,
     useSortBy

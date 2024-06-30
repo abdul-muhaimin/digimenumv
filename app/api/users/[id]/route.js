@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
-export async function GET(req) {
+export async function GET(req, { params }) {
   const { userId } = auth(req);
 
   if (!userId) {
@@ -34,7 +34,7 @@ export async function GET(req) {
         location: true,
         links: true,
         storeDescription: true,
-        url: true, // Added the new field here
+        url: true, // Ensure this field is included
       },
     });
 
@@ -58,7 +58,7 @@ export async function GET(req) {
   }
 }
 
-export async function PUT(req) {
+export async function PUT(req, { params }) {
   const { userId } = auth(req);
   let data;
 
@@ -82,7 +82,7 @@ export async function PUT(req) {
     name, email, mobile,
     businessName, businessType, businessAddress,
     businessIsland, businessAtoll, businessTelephone, avatarImageUrl, bannerImageUrl, links, location, storeDescription, url
-  } = data; // Added `url` here
+  } = data; // Ensure `url` is included here
 
   try {
     const updatedUser = await prisma.user.update({

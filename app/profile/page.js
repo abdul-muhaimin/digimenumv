@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import useSWR from 'swr';
 import { useUser } from '@clerk/nextjs';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -11,57 +12,48 @@ import ImageCropper from '@/components/ImageCropper';
 import Spinner from '@/components/ui/Spinner';
 import Navbar from '@/components/layout/SideBar';
 
+// Fetcher function for SWR
+const fetcher = url => fetch(url).then(res => res.json());
+
 const UserDetails = () => {
   const { isLoaded, user } = useUser();
-  const [userData, setUserData] = useState({});
+  const { register, handleSubmit, setValue, control, reset } = useForm();
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [croppedAvatar, setCroppedAvatar] = useState(null);
   const [croppedBanner, setCroppedBanner] = useState(null);
   const [isAvatarCropping, setIsAvatarCropping] = useState(false);
   const [isBannerCropping, setIsBannerCropping] = useState(false);
-  const { register, handleSubmit, setValue, control, reset } = useForm();
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // SWR hook to fetch user data
+  const { data: userData, error } = useSWR(isLoaded ? `/api/users/${user.id}` : null, fetcher, {
+    revalidateOnFocus: false,
+  });
+
   useEffect(() => {
-    if (!isLoaded) return;
-
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(`/api/users/${user.id}`);
-        if (!response.ok) throw new Error('Error fetching user data');
-        const data = await response.json();
-        setUserData(data);
-        setValue('name', data.name || 'Not available');
-        setValue('email', data.email || 'Not available');
-        setValue('mobile', data.mobile || 'Not available');
-        setValue('businessName', data.businessName || 'Not available');
-        setValue('businessType', data.businessType || 'Not available');
-        setValue('businessAddress', data.businessAddress || 'Not available');
-        setValue('businessIsland', data.businessIsland || 'Not available');
-        setValue('businessAtoll', data.businessAtoll || 'Not available');
-        setValue('businessTelephone', data.businessTelephone || 'Not available');
-        setValue('location', data.location || 'Not available');
-        setValue('storeDescription', data.storeDescription || 'Not available');
-        setValue('links.instagram', data.links?.instagram || 'Not available');
-        setValue('links.viber', data.links?.viber || 'Not available');
-        setValue('links.map', data.links?.map || 'Not available');
-        setValue('links.telegram', data.links?.telegram || 'Not available');
-        setValue('links.facebook', data.links?.facebook || 'Not available');
-        setValue('links.whatsapp', data.links?.whatsapp || 'Not available');
-        setValue('links.twitter', data.links?.twitter || 'Not available');
-        setValue('url', data.url || ''); // Set the new field
-        setIsLoading(false);
-      } catch (error) {
-        toast.error('Failed to fetch user data');
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [isLoaded, user, setValue]);
+    if (userData) {
+      setValue('name', userData.name || 'Not available');
+      setValue('email', userData.email || 'Not available');
+      setValue('mobile', userData.mobile || 'Not available');
+      setValue('businessName', userData.businessName || 'Not available');
+      setValue('businessType', userData.businessType || 'Not available');
+      setValue('businessAddress', userData.businessAddress || 'Not available');
+      setValue('businessIsland', userData.businessIsland || 'Not available');
+      setValue('businessAtoll', userData.businessAtoll || 'Not available');
+      setValue('businessTelephone', userData.businessTelephone || 'Not available');
+      setValue('location', userData.location || 'Not available');
+      setValue('storeDescription', userData.storeDescription || 'Not available');
+      setValue('links.instagram', userData.links?.instagram || 'Not available');
+      setValue('links.viber', userData.links?.viber || 'Not available');
+      setValue('links.map', userData.links?.map || 'Not available');
+      setValue('links.telegram', userData.links?.telegram || 'Not available');
+      setValue('links.facebook', userData.links?.facebook || 'Not available');
+      setValue('links.whatsapp', userData.links?.whatsapp || 'Not available');
+      setValue('links.twitter', userData.links?.twitter || 'Not available');
+      setValue('url', userData.url || ''); // Set the new field
+    }
+  }, [userData, setValue]);
 
   const handleImageChange = (setSelectedImage, setIsCropping) => (e) => {
     const file = e.target.files[0];
@@ -118,7 +110,6 @@ const UserDetails = () => {
 
       if (!response.ok) throw new Error('Error updating user data');
       const updatedData = await response.json();
-      setUserData(updatedData);
       toast.success('Details updated successfully');
     } catch (error) {
       toast.error('Failed to update user data');
@@ -170,7 +161,11 @@ const UserDetails = () => {
     setCroppedBanner(null);
   };
 
-  if (isLoading) {
+  if (error) {
+    return <div>Error loading user data</div>;
+  }
+
+  if (!userData) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Spinner />

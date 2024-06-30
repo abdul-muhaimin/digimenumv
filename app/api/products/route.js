@@ -3,11 +3,14 @@ import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
-export async function GET(req, res) {
+export async function GET(req) {
   const { userId } = auth(req);
 
   if (!userId) {
-    return res.status(401).json({ message: 'Authentication required' });
+    return new Response(JSON.stringify({ message: 'Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -18,7 +21,7 @@ export async function GET(req, res) {
             category: {
               menu: {
                 user: {
-                  clerkId: userId, // Use clerkId instead of userId
+                  clerkId: userId,
                 },
               },
             },
@@ -26,7 +29,7 @@ export async function GET(req, res) {
           {
             menu: {
               user: {
-                clerkId: userId, // Use clerkId instead of userId
+                clerkId: userId,
               },
             },
           },
@@ -119,7 +122,17 @@ export async function PUT(req) {
     });
   }
 
-  const { products } = await req.json();
+  let data;
+  try {
+    data = await req.json();
+  } catch (error) {
+    return new Response(JSON.stringify({ message: 'Invalid request body' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { products } = data;
 
   try {
     await prisma.$transaction(

@@ -1,56 +1,31 @@
 "use client";
-import { useEffect, useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Dialog, Transition, TransitionChild, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Reorder, motion } from 'framer-motion';
+import { Reorder } from 'framer-motion';
 import { MdDragIndicator } from 'react-icons/md';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@heroicons/react/outline';
-import Navbar from "@/components/layout/SideBar";
 import Spinner from "@/components/ui/Spinner"; // Import the Spinner component
+import useSWR from 'swr';
+
+const fetcher = url => fetch(url).then(res => res.json());
 
 const QRPage = () => {
   const router = useRouter();
   const { user } = useUser();
-  const [menus, setMenus] = useState([]);
-  const [originalMenus, setOriginalMenus] = useState([]);
+  const { data: menus, error, isLoading, mutate } = useSWR(user ? `/api/menus` : null, fetcher);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentMenu, setCurrentMenu] = useState(null);
   const [name, setName] = useState("");
   const [orderChanged, setOrderChanged] = useState(false);
   const [isDragEnabled, setIsDragEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      fetchMenus();
-    }
-  }, [user]);
-
-  const fetchMenus = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/menus`);
-      if (response.ok) {
-        const data = await response.json();
-        setMenus(data);
-        setOriginalMenus(data);
-      } else {
-        toast.error("Failed to fetch menus");
-      }
-    } catch (error) {
-      toast.error("An error occurred while fetching menus");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const openModal = (menu = null) => {
     setCurrentMenu(menu);
@@ -84,7 +59,7 @@ const QRPage = () => {
 
       if (response.ok) {
         toast.success(`Menu ${currentMenu ? "updated" : "created"} successfully`);
-        fetchMenus();
+        mutate(); // Revalidate the data
         closeModal();
       } else {
         toast.error(`Failed to ${currentMenu ? "update" : "create"} menu`);
@@ -113,7 +88,7 @@ const QRPage = () => {
       if (response.ok) {
         toast.success("Menu positions updated successfully");
         setOrderChanged(false);
-        setOriginalMenus(menus);
+        mutate(); // Revalidate the data
       } else {
         toast.error("Failed to update menu positions");
       }
@@ -125,7 +100,7 @@ const QRPage = () => {
   };
 
   const handleCancelOrder = () => {
-    setMenus(originalMenus);
+    mutate(); // Revalidate the data to reset to original state
     setOrderChanged(false);
   };
 
@@ -147,7 +122,7 @@ const QRPage = () => {
       });
 
       if (response.ok) {
-        setMenus(menus.filter(menu => menu.id !== menuId));
+        mutate(); // Revalidate the data
         toast.success("Menu deleted successfully");
       } else {
         toast.error("Failed to delete menu");
@@ -163,6 +138,18 @@ const QRPage = () => {
     setIsDragEnabled(!isDragEnabled);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error loading menus</div>;
+  }
+
   return (
     <div className="container mx-auto p-4" style={{ backgroundColor: '#FFFFFF' }}>
       <h1 className="text-3xl font-bold mb-4 text-center" style={{ color: '#333333' }}>My Menus</h1>
@@ -171,56 +158,48 @@ const QRPage = () => {
         <Button onClick={toggleDrag} className="ml-4" style={{ backgroundColor: '#FFB84D', color: '#333333' }}>{isDragEnabled ? 'Disable Drag' : 'Enable Drag'}</Button>
       </div>
       <div className="mt-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <Spinner />
-          </div>
-        ) : (
-          <>
-            {menus.length > 0 ? (
-              <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
-                {menus.map((menu) => (
-                  <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
-                    <div className="mb-4 p-4 rounded-md shadow-lg" style={{ backgroundColor: '#F5F5F5' }}>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <div drag={isDragEnabled ? "y" : false} className="cursor-pointer mr-4">
-                            <MdDragIndicator className="text-xl ml-2" />
-                          </div>
-                          <div>
-                            <h2 className="text-xl mb-2" style={{ color: '#333333' }}>{menu.name}</h2>
-                            <p className="text-sm" style={{ color: '#777777' }}>
-                              {menu.categoriesCount} categories, {menu.productsCount} products
-                            </p>
-                          </div>
-                        </div>
-                        <div>
-                          <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)} style={{ color: '#FF8400' }}>View</Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost">
-                                <DotsVerticalIcon className="h-5 w-5 mt-2" style={{ color: '#333333' }} />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem onClick={() => openModal(menu)}>
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteMenu(menu.id)}>
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+        {menus && menus.length > 0 ? (
+          <Reorder.Group axis="y" values={menus} onReorder={handleReorder}>
+            {menus.map((menu) => (
+              <Reorder.Item key={menu.id} value={menu} drag={isDragEnabled ? "y" : false}>
+                <div className="mb-4 p-4 rounded-md shadow-lg" style={{ backgroundColor: '#F5F5F5' }}>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div drag={isDragEnabled ? "y" : false} className="cursor-pointer mr-4">
+                        <MdDragIndicator className="text-xl ml-2" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl mb-2" style={{ color: '#333333' }}>{menu.name}</h2>
+                        <p className="text-sm" style={{ color: '#777777' }}>
+                          {menu.categoriesCount} categories, {menu.productsCount} products
+                        </p>
                       </div>
                     </div>
-                  </Reorder.Item>
-                ))}
-              </Reorder.Group>
-            ) : (
-              <div style={{ color: '#333333' }}>No menus available</div>
-            )}
-          </>
+                    <div>
+                      <Button variant="ghost" onClick={() => router.push(`/my-qr/menus/${menu.id}`)} style={{ color: '#FF8400' }}>View</Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost">
+                            <DotsVerticalIcon className="h-5 w-5 mt-2" style={{ color: '#333333' }} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => openModal(menu)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteMenu(menu.id)}>
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </div>
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+        ) : (
+          <div style={{ color: '#333333' }}>No menus available</div>
         )}
       </div>
       {orderChanged && (
